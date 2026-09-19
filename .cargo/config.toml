@@ -1,0 +1,4 @@
+# Codecs are compared on the host ISA so SIMD kernels get their native width.
+# Results are therefore per-machine by construction; results/ is keyed by host.
+[build]
+rustflags = ["-C", "target-cpu=native"]

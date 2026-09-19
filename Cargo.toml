@@ -1,0 +1,42 @@
+[package]
+name = "intpack-bench"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Benchmark harness for integer sequence codecs: synthetic and corpus-derived streams, bulk/skip/random-access measurements, entropy-relative density."
+repository = "https://github.com/dbalmain/intpack-bench"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand = "0.9"
+rand_distr = "0.5"
+walkdir = "2"
+# codecs under test
+bitpacking = "0.9"
+roaring = "0.11"
+sucds = "0.9"
+streamvbyte64 = "0.2"
+fastpfor = "0.9"
+# hardware counters (Linux only; degrades to wall-clock elsewhere)
+perf-event = { version = "0.4", optional = true }
+
+[features]
+default = ["perf"]
+perf = ["dep:perf-event"]
+
+[profile.release]
+debug = 1
+codegen-units = 1
+lto = "thin"
+
+[profile.bench]
+inherits = "release"
+
+[lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+todo = "warn"
+unimplemented = "warn"
