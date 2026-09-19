@@ -47,9 +47,9 @@ pub fn render(machine: &Machine, records: &[Record]) -> String {
         );
         let _ = writeln!(
             md,
-            "| codec | bits/int | excess | aux | enc Mi/s | dec Mi/s (arena) | dec Mi/s (hot) | ∩ 1:1 ns/e | ∩ 1:10 | ∩ 1:100 | ∩ 1:1000 | seek ns | get ns | enc peak KB | dec peak KB | stream |"
+            "| codec | bits/int | excess | aux | enc Mi/s | dec Mi/s (arena) | dec Mi/s (hot) | open ns/list | ∩ 1:1 ns/e | ∩ 1:10 | ∩ 1:100 | ∩ 1:1000 | seek ns | get ns | enc peak KB | dec peak KB | stream |"
         );
-        let _ = writeln!(md, "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:-:|");
+        let _ = writeln!(md, "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:-:|");
         for r in &rows {
             if let Some(e) = &r.error {
                 let _ = writeln!(md, "| {} | ✗ {} |", r.codec, e.replace('|', "/"));
@@ -63,7 +63,7 @@ pub fn render(machine: &Machine, records: &[Record]) -> String {
             };
             let _ = writeln!(
                 md,
-                "| {} | {:.2} | {:+.2} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+                "| {} | {:.2} | {:+.2} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
                 r.codec,
                 r.bits_per_int,
                 r.excess_bits_per_int,
@@ -71,6 +71,7 @@ pub fn render(machine: &Machine, records: &[Record]) -> String {
                 mi_s(r.encode.as_ref(), r.ints),
                 mi_s(r.decode_arena.as_ref(), r.ints),
                 mi_s(r.decode_hot.as_ref(), r.decode_hot_ints),
+                ns_per(r.open.as_ref(), r.lists),
                 ix(1),
                 ix(10),
                 ix(100),
@@ -87,12 +88,18 @@ pub fn render(machine: &Machine, records: &[Record]) -> String {
             .iter()
             .filter(|r| r.error.is_none())
             .flat_map(|r| {
-                [("enc", r.encode), ("dec", r.decode_arena), ("hot", r.decode_hot), ("seek", r.seek), ("get", r.get)]
-                    .into_iter()
-                    .filter_map(move |(k, s)| {
-                        s.filter(|s| s.ns_spread > 0.15)
-                            .map(|s| format!("{} {k} ±{:.0}%", r.codec, s.ns_spread * 100.0))
-                    })
+                [
+                    ("enc", r.encode),
+                    ("dec", r.decode_arena),
+                    ("hot", r.decode_hot),
+                    ("open", r.open),
+                    ("seek", r.seek),
+                    ("get", r.get),
+                ]
+                .into_iter()
+                .filter_map(move |(k, s)| {
+                    s.filter(|s| s.ns_spread > 0.15).map(|s| format!("{} {k} ±{:.0}%", r.codec, s.ns_spread * 100.0))
+                })
             })
             .collect();
         if !noisy.is_empty() {

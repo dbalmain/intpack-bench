@@ -13,6 +13,10 @@
 //!   size is recorded so the reader knows which.
 //! * **decode (hot)** — one representative list decoded repeatedly, L1-hot.
 //!   The codec's raw kernel speed, with memory taken out.
+//! * **open** — preparing every list for queries (`Codec::open`), ns per
+//!   list. Zero for in-place formats; the deserialisation cost for owning
+//!   structures, which an index would pay once per segment open, not per
+//!   query.
 //! * **intersect** — leapfrog AND of list pairs at length ratios 1:1, 1:10,
 //!   1:100, 1:1000 via the codec's own `next_geq`, ns per element of the
 //!   shorter list. This is where skip structures earn their bytes or don't.
@@ -28,7 +32,7 @@ use std::time::Duration;
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::codec::{self, Codec};
+use crate::codec::{self, Codec, Prepared};
 use crate::stream::{Dataset, Kind, entropy_bits};
 use crate::timer::{self, Sample};
 
@@ -71,6 +75,7 @@ pub struct Record {
     /// Keyed by ratio (1, 10, 100, 1000); each is total ns over the pairs
     /// with `pairs_short_ints` elements in the short lists, so per-element
     /// cost is `ns / ints`.
+    pub open: Option<Sample>,
     pub intersect: Vec<Intersect>,
     pub seek: Option<Sample>,
     pub seek_probes: usize,
@@ -127,6 +132,7 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
         decode_arena: None,
         decode_hot: None,
         decode_hot_ints: 0,
+        open: None,
         intersect: Vec::new(),
         seek: None,
         seek_probes: 0,
@@ -202,10 +208,25 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
         }));
     }
 
+    // ── open ──
+    let needs_open = (kind == Kind::Sorted && codec.caps().seek) || codec.caps().random_access;
+    let mut prepared: Vec<Box<dyn Prepared>> = Vec::new();
+    if needs_open {
+        rec.open = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+            prepared.clear();
+            prepared.extend(
+                ds.lists
+                    .iter()
+                    .zip(&arena.spans)
+                    .map(|(l, &(o, n))| codec::prepare(codec, kind, universe, l.len(), &arena.bytes[o..o + n])),
+            );
+        }));
+    }
+
     // ── seek / intersect (sorted, with cursor) ──
     if kind == Kind::Sorted && codec.caps().seek {
         for ratio in [1u32, 10, 100, 1000] {
-            if let Some(ix) = intersect_bench(codec, ds, &arena, ratio, cfg, &mut rng) {
+            if let Some(ix) = intersect_bench(codec, ds, &prepared, ratio, cfg, &mut rng) {
                 rec.intersect.push(ix);
             }
         }
@@ -217,8 +238,7 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
             rec.seek_probes = probes.len();
             rec.seek = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
                 for &(i, target) in &probes {
-                    let (o, n) = arena.spans[i];
-                    if let Some(mut cur) = codec.cursor(universe, ds.lists[i].len(), &arena.bytes[o..o + n]) {
+                    if let Some(mut cur) = prepared[i].cursor() {
                         std::hint::black_box(cur.next_geq(target));
                     }
                 }
@@ -238,8 +258,7 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
         rec.get_probes = probes.len();
         rec.get = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
             for &(i, j) in &probes {
-                let (o, n) = arena.spans[i];
-                std::hint::black_box(codec.get(kind, universe, ds.lists[i].len(), &arena.bytes[o..o + n], j));
+                std::hint::black_box(prepared[i].get(j));
             }
         }));
     }
@@ -269,12 +288,11 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
 fn intersect_bench(
     codec: &dyn Codec,
     ds: &Dataset,
-    arena: &Arena,
+    prepared: &[Box<dyn Prepared + '_>],
     ratio: u32,
     cfg: &Config,
     rng: &mut StdRng,
 ) -> Option<Intersect> {
-    let universe = ds.meta.universe;
     // Candidate short lists: at least 32 elements, and a partner exists.
     let mut by_len: Vec<usize> = (0..ds.lists.len()).filter(|&i| ds.lists[i].len() >= 32).collect();
     by_len.sort_by_key(|&i| ds.lists[i].len());
@@ -308,12 +326,7 @@ fn intersect_bench(
     let long_ints: usize = pairs.iter().map(|&(_, l)| ds.lists[l].len()).sum();
 
     let leapfrog = |s: usize, l: usize| -> usize {
-        let (so, sn) = arena.spans[s];
-        let (lo, ln) = arena.spans[l];
-        let (Some(mut a), Some(mut b)) = (
-            codec.cursor(universe, ds.lists[s].len(), &arena.bytes[so..so + sn]),
-            codec.cursor(universe, ds.lists[l].len(), &arena.bytes[lo..lo + ln]),
-        ) else {
+        let (Some(mut a), Some(mut b)) = (prepared[s].cursor(), prepared[l].cursor()) else {
             return 0;
         };
         let mut count = 0;

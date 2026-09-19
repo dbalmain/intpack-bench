@@ -20,6 +20,13 @@
 //! * `cursor` and `get` are optional. Returning `None` means the codec has no
 //!   native support and that cell is left blank in the report. Do **not**
 //!   emulate them by decoding everything — that measures the wrong thing.
+//! * `open` turns encoded bytes into whatever the codec needs to answer
+//!   cursor/get queries — a pointer cast for zero-copy formats, a
+//!   deserialisation for crates whose structures own their memory. The
+//!   harness prepares each list once, times that as "open", and then times
+//!   cursor and get operations on the prepared form. Override it when the
+//!   default (which just holds the bytes and calls `cursor`/`get`) would
+//!   deserialise on every query.
 
 use crate::stream::Kind;
 
@@ -57,6 +64,31 @@ pub trait Cursor {
     fn next(&mut self) -> Option<u32>;
 }
 
+/// One list, opened for queries. See [`Codec::prepare`].
+pub trait Prepared {
+    fn cursor(&self) -> Option<Box<dyn Cursor + '_>>;
+    fn get(&self, i: usize) -> Option<u32>;
+}
+
+/// Default [`Prepared`]: holds the bytes and defers to the codec's
+/// `cursor`/`get`.
+struct Lazy<'a> {
+    codec: &'a dyn Codec,
+    kind: Kind,
+    universe: u32,
+    n: usize,
+    buf: &'a [u8],
+}
+
+impl Prepared for Lazy<'_> {
+    fn cursor(&self) -> Option<Box<dyn Cursor + '_>> {
+        self.codec.cursor(self.universe, self.n, self.buf)
+    }
+    fn get(&self, i: usize) -> Option<u32> {
+        self.codec.get(self.kind, self.universe, self.n, self.buf, i)
+    }
+}
+
 pub trait Codec: Sync {
     fn name(&self) -> &'static str;
     fn caps(&self) -> Caps;
@@ -84,6 +116,20 @@ pub trait Codec: Sync {
     fn get(&self, _kind: Kind, _universe: u32, _n: usize, _buf: &[u8], _i: usize) -> Option<u32> {
         None
     }
+
+    /// Open one encoded list for repeated cursor/get queries. `None` (the
+    /// default) means the format is queried in place and [`prepare`] will
+    /// hold the bytes and call `cursor`/`get` directly; owning structures
+    /// override this to deserialise once.
+    fn open<'a>(&self, _kind: Kind, _universe: u32, _n: usize, _buf: &'a [u8]) -> Option<Box<dyn Prepared + 'a>> {
+        None
+    }
+}
+
+/// Open one list for queries: the codec's own [`Codec::open`] if it has one,
+/// else the in-place default.
+pub fn prepare<'a>(codec: &'a dyn Codec, kind: Kind, universe: u32, n: usize, buf: &'a [u8]) -> Box<dyn Prepared + 'a> {
+    codec.open(kind, universe, n, buf).unwrap_or_else(|| Box::new(Lazy { codec, kind, universe, n, buf }))
 }
 
 /// Every codec the harness knows, in report order. Reference codecs first.
@@ -110,8 +156,9 @@ pub fn check(codec: &dyn Codec, kind: Kind, universe: u32, list: &[u32]) -> Resu
             back.iter().zip(list).position(|(a, b)| a != b).or(Some(back.len().min(list.len())))
         ));
     }
+    let prepared = prepare(codec, kind, universe, list.len(), &buf);
     if kind == Kind::Sorted
-        && let Some(mut cur) = codec.cursor(universe, list.len(), &buf)
+        && let Some(mut cur) = prepared.cursor()
     {
         // Seek to every element via the gap just before it, then re-seek to
         // the element itself: the cursor must stay put.
@@ -128,7 +175,7 @@ pub fn check(codec: &dyn Codec, kind: Kind, universe: u32, list: &[u32]) -> Resu
             return Err(format!("{}: next_geq(universe) should exhaust", codec.name()));
         }
         // Sequential next() from a fresh cursor.
-        let Some(mut cur) = codec.cursor(universe, list.len(), &buf) else {
+        let Some(mut cur) = prepared.cursor() else {
             return Err(format!("{}: cursor disappeared", codec.name()));
         };
         for &v in list {
@@ -139,7 +186,7 @@ pub fn check(codec: &dyn Codec, kind: Kind, universe: u32, list: &[u32]) -> Resu
     }
     if codec.caps().random_access {
         for (i, &v) in list.iter().enumerate() {
-            if codec.get(kind, universe, list.len(), &buf, i) != Some(v) {
+            if prepared.get(i) != Some(v) {
                 return Err(format!("{}: get({i}) != {v}", codec.name()));
             }
         }
