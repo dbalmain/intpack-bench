@@ -8,10 +8,7 @@
 //!
 //! Generators are deterministic for a given seed.
 
-use std::collections::HashSet;
-
 use rand::prelude::*;
-use rand_distr::{Distribution, Geometric, Zipf};
 
 use crate::stream::{Dataset, Kind};
 
@@ -154,7 +151,10 @@ pub fn presets(scale: u32) -> Vec<Preset> {
             name: "clustered-d0.1-b64",
             source: Source::Clustered { universe: u, lists: 32, density: 0.1, burst_len: 64.0 },
         },
-        Preset { name: "periodic-s100-j0", source: Source::Periodic { universe: u, lists: 64, stride: 100, jitter: 0 } },
+        Preset {
+            name: "periodic-s100-j0",
+            source: Source::Periodic { universe: u, lists: 64, stride: 100, jitter: 0 },
+        },
         Preset {
             name: "periodic-s100-j10",
             source: Source::Periodic { universe: u, lists: 64, stride: 100, jitter: 10 },
@@ -163,7 +163,13 @@ pub fn presets(scale: u32) -> Vec<Preset> {
         Preset { name: "runs-d0.5-r256", source: Source::Runs { universe: u, lists: 8, density: 0.5, run_len: 256.0 } },
         Preset {
             name: "zipf-dict-e1-b0",
-            source: Source::ZipfDictionary { universe: u, lists: 20_000, exponent: 1.0, max_density: 0.2, burst_len: 0.0 },
+            source: Source::ZipfDictionary {
+                universe: u,
+                lists: 20_000,
+                exponent: 1.0,
+                max_density: 0.2,
+                burst_len: 0.0,
+            },
         },
         Preset {
             name: "zipf-dict-e1-b64",
@@ -180,7 +186,10 @@ pub fn presets(scale: u32) -> Vec<Preset> {
         Preset { name: "uniform-bits-4", source: Source::UniformBits { lists: ulists, len, bits: 4 } },
         Preset { name: "uniform-bits-12", source: Source::UniformBits { lists: ulists, len, bits: 12 } },
         Preset { name: "uniform-bits-20", source: Source::UniformBits { lists: ulists, len, bits: 20 } },
-        Preset { name: "zipf-values-n1024-e1.2", source: Source::ZipfValues { lists: ulists, len, n: 1024, exponent: 1.2 } },
+        Preset {
+            name: "zipf-values-n1024-e1.2",
+            source: Source::ZipfValues { lists: ulists, len, n: 1024, exponent: 1.2 },
+        },
     ]
 }
 
@@ -298,7 +307,7 @@ fn clustered_list(rng: &mut StdRng, universe: u32, density: f64, burst_len: f64)
 
 fn periodic_list(rng: &mut StdRng, universe: u32, stride: u32, jitter: u32) -> Vec<u32> {
     let stride = stride.max(1);
-    let mut out = Vec::new();
+    let mut out = Vec::with_capacity((universe / stride) as usize + 1);
     let mut last: Option<u32> = None;
     let u = u64::from(universe);
     let j = u64::from(jitter);
@@ -309,9 +318,7 @@ fn periodic_list(rng: &mut StdRng, universe: u32, stride: u32, jitter: u32) -> V
             break;
         }
         k += 1;
-        let lo = -(i64::from(jitter));
-        let hi = i64::from(jitter);
-        let noise = if lo <= hi { rng.random_range(lo..=hi) } else { 0 };
+        let noise = rng.random_range(-(i64::from(jitter))..=i64::from(jitter));
         let Some(v) = (center as i64).checked_add(noise) else {
             continue;
         };
@@ -366,12 +373,9 @@ fn runs_list(rng: &mut StdRng, universe: u32, density: f64, run_len: f64) -> Vec
 
 fn geometric_list(rng: &mut StdRng, len: u32, p: f64) -> Vec<u32> {
     let p = p.clamp(0.0, 1.0);
-    let Ok(g) = Geometric::new(p) else {
-        return vec![1; len as usize];
-    };
     (0..len as usize)
         .map(|_| {
-            let x = 1u64.saturating_add(g.sample(rng));
+            let x = 1u64.saturating_add(geometric_failures(rng, p));
             x.min(u64::from(u32::MAX - 1)) as u32
         })
         .collect()
@@ -384,16 +388,24 @@ fn uniform_bits_list(rng: &mut StdRng, len: u32, universe: u32) -> Vec<u32> {
     (0..len as usize).map(|_| rng.random_range(0..universe)).collect()
 }
 
+/// Inverse CDF of the finite Zipf mass `P(rank r) ∝ r^{-s}` mapped to `[0, n)`.
 fn zipf_values_list(rng: &mut StdRng, len: u32, n: u32, exponent: f64) -> Vec<u32> {
-    let n = n.max(1);
-    let Ok(z) = Zipf::new(f64::from(n), exponent.max(0.0)) else {
-        return vec![0; len as usize];
-    };
+    let n = n.max(1) as usize;
+    let s = exponent.max(0.0);
+    let mut cdf = Vec::with_capacity(n);
+    let mut acc = 0.0;
+    for rank in 1..=n {
+        acc += (rank as f64).powf(-s);
+        cdf.push(acc);
+    }
+    let total = acc;
     (0..len as usize)
         .map(|_| {
-            let x: f64 = z.sample(rng);
-            let rank = if x.is_finite() { x.max(1.0) as u32 } else { 1 };
-            rank.saturating_sub(1).min(n - 1)
+            if total <= 0.0 {
+                return 0;
+            }
+            let u = rng.random::<f64>() * total;
+            cdf.partition_point(|&x| x < u).min(n - 1) as u32
         })
         .collect()
 }
@@ -414,7 +426,7 @@ fn bernoulli_range(rng: &mut StdRng, start: u32, end: u32, p: f64, out: &mut Vec
     }
 }
 
-/// Number of failures before the first success at probability `p`.
+/// Number of failures before the first success at probability `p` (inverse CDF).
 fn geometric_failures(rng: &mut StdRng, p: f64) -> u64 {
     if p >= 1.0 {
         return 0;
@@ -422,10 +434,8 @@ fn geometric_failures(rng: &mut StdRng, p: f64) -> u64 {
     if p <= 0.0 {
         return u64::MAX / 4;
     }
-    match Geometric::new(p) {
-        Ok(g) => g.sample(rng),
-        Err(_) => 0,
-    }
+    let u: f64 = rng.random_range(f64::EPSILON..1.0);
+    (u.ln() / (1.0 - p).ln()).floor() as u64
 }
 
 fn force_len(rng: &mut StdRng, universe: u32, list: &mut Vec<u32>, n: usize) {
@@ -437,26 +447,48 @@ fn force_len(rng: &mut StdRng, universe: u32, list: &mut Vec<u32>, n: usize) {
     if list.len() == n || universe == 0 {
         return;
     }
-    let mut seen: HashSet<u32> = list.iter().copied().collect();
+    let mut extra = Vec::new();
     let mut attempts = 0usize;
-    while list.len() < n && attempts < n.saturating_mul(32).max(32) {
+    while list.len() + extra.len() < n && attempts < n.saturating_mul(32).max(32) {
         attempts += 1;
         let v = rng.random_range(0..universe);
-        if seen.insert(v) {
-            list.push(v);
+        if list.binary_search(&v).is_err() && !extra.contains(&v) {
+            extra.push(v);
         }
+    }
+    list.extend(extra);
+    list.sort_unstable();
+    list.dedup();
+    if list.len() > n {
+        list.truncate(n);
+        return;
     }
     if list.len() < n {
-        for v in 0..universe {
-            if list.len() >= n {
-                break;
+        fill_holes(universe, list, n);
+    }
+}
+
+fn fill_holes(universe: u32, list: &mut Vec<u32>, n: usize) {
+    let old = std::mem::take(list);
+    list.reserve(n);
+    let mut i = 0;
+    let mut v = 0u32;
+    while list.len() < n {
+        if i < old.len() && (v >= universe || old[i] <= v) {
+            if list.last() != Some(&old[i]) {
+                list.push(old[i]);
             }
-            if seen.insert(v) {
-                list.push(v);
+            if old[i] == v && v < universe {
+                v = v.saturating_add(1);
             }
+            i += 1;
+        } else if v < universe {
+            list.push(v);
+            v = v.saturating_add(1);
+        } else {
+            break;
         }
     }
-    list.sort_unstable();
 }
 
 #[cfg(test)]
@@ -492,11 +524,7 @@ mod tests {
 
     #[test]
     fn clustered_density_is_close() {
-        let ds = generate(
-            "t",
-            &Source::Clustered { universe: 100_000, lists: 4, density: 0.05, burst_len: 32.0 },
-            1,
-        );
+        let ds = generate("t", &Source::Clustered { universe: 100_000, lists: 4, density: 0.05, burst_len: 32.0 }, 1);
         assert!(ds.validate().is_ok());
         for l in &ds.lists {
             let d = density_of(l, 100_000);
@@ -510,7 +538,11 @@ mod tests {
         let ds = generate("t", &s, 3);
         assert!(ds.validate().is_ok());
         for l in &ds.lists {
-            assert!(l.windows(2).all(|w| w[1] == w[0] + 10), "gaps {:?}", l.windows(2).map(|w| w[1] - w[0]).collect::<Vec<_>>());
+            assert!(
+                l.windows(2).all(|w| w[1] == w[0] + 10),
+                "gaps {:?}",
+                l.windows(2).map(|w| w[1] - w[0]).collect::<Vec<_>>()
+            );
             assert_eq!(l.first().copied(), Some(0));
         }
         let s = Source::Periodic { universe: 10_000, lists: 2, stride: 10, jitter: 3 };
@@ -540,11 +572,7 @@ mod tests {
         let lists = 20;
         let exponent = 1.0;
         let max_density = 0.2;
-        let ds = generate(
-            "t",
-            &Source::ZipfDictionary { universe, lists, exponent, max_density, burst_len: 0.0 },
-            4,
-        );
+        let ds = generate("t", &Source::ZipfDictionary { universe, lists, exponent, max_density, burst_len: 0.0 }, 4);
         assert!(ds.validate().is_ok());
         let max_n = (max_density * f64::from(universe)).round().max(1.0);
         for (i, l) in ds.lists.iter().enumerate() {
