@@ -88,7 +88,9 @@ pub fn run(root: &Path, opts: &Options) -> Result<Vec<Dataset>> {
     }
 
     let files = collect_files(root)?;
-    let n_docs = u32::try_from(files.len()).map_err(|_| anyhow::anyhow!("more than u32::MAX documents"))?;
+    let Ok(n_docs) = u32::try_from(files.len()) else {
+        bail!("more than u32::MAX documents");
+    };
 
     let (word_postings, trigram_postings) = count_postings(&files)?;
     let d_words = sample_d(word_postings, opts.max_ints);
@@ -157,7 +159,7 @@ pub fn run(root: &Path, opts: &Options) -> Result<Vec<Dataset>> {
     }
 
     let mut tri_terms: Vec<([u8; 3], Vec<u32>)> = trigrams.into_iter().collect();
-    tri_terms.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+    tri_terms.sort_unstable_by_key(|a| a.0);
     let mut tri_docs = Dataset::new("trigrams.docs", Kind::Sorted, n_docs, source.clone());
     tri_docs.lists.reserve(tri_terms.len());
     for (_, list) in tri_terms {
@@ -214,7 +216,7 @@ fn collect_files(root: &Path) -> Result<Vec<FileInfo>> {
     }
     // Path order is the locality a directory-tree index would see; shuffling
     // would turn bursty postings into uniform noise.
-    files.sort_by(|a, b| a.path.cmp(&b.path));
+    files.sort_unstable_by(|a, b| a.path.cmp(&b.path));
     Ok(files)
 }
 
@@ -251,7 +253,7 @@ fn for_each_word(bytes: &[u8], mut f: impl FnMut(&[u8], u32)) {
             i += 1;
         }
         let n = i - start;
-        if n < WORD_MIN || n > WORD_MAX {
+        if !(WORD_MIN..=WORD_MAX).contains(&n) {
             continue;
         }
         let mut buf = [0u8; WORD_MAX];
@@ -294,7 +296,7 @@ fn sample_d(total_postings: usize, max_ints: usize) -> u64 {
 }
 
 fn keep_term(term: &[u8], seed: u64, d: u64) -> bool {
-    d != 0 && fnv1a(seed, term) % d == 0
+    d != 0 && fnv1a(seed, term).is_multiple_of(d)
 }
 
 // ── accumulate ──
