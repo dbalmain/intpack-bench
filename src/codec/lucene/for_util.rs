@@ -4,7 +4,7 @@
 //! 32-bit. Decode goes through [`split_ints`] then a leftover stitch for bpv
 //! that do not divide the lane width. `decode(32, …)` is 128 raw little-endian
 //! ints — Java's `decodeSlow(32)` would index `MASKS32[32]`.
-#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
+#![cfg_attr(not(test), allow(dead_code))] // unused ForUtil helpers stay for the Java surface
 #![allow(clippy::needless_range_loop)] // fixed-index packed-lane loops, for LLVM
 #![allow(clippy::explicit_counter_loop)]
 

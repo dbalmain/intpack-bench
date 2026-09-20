@@ -43,6 +43,8 @@ pub mod intpack_pef;
 pub mod intpack_streamvbyte;
 pub mod intpack_vbyte;
 pub mod lucene;
+pub mod lucene_docs;
+pub mod lucene_pfor;
 pub mod pef;
 pub mod raw;
 pub mod roaring;
@@ -161,6 +163,8 @@ pub fn all() -> Vec<Box<dyn Codec>> {
         Box::new(intpack_bp128::IpBp128Skip),
         Box::new(fastpfor::FastPFor),
         Box::new(intpack_fastpfor::IntpackFastPFor),
+        Box::new(lucene_pfor::LucenePFor),
+        Box::new(lucene_docs::LuceneDocs),
         Box::new(streamvbyte::StreamVByte),
         Box::new(intpack_streamvbyte::IntpackStreamVByte),
         Box::new(roaring::Roaring),

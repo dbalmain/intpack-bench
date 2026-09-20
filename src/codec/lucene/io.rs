@@ -1,6 +1,6 @@
 //! Lucene `DataInput` / `DataOutput` primitives used by the 10.3.1 postings
 //! format: little-endian int/long, vint/vlong, vint15/vlong15, group-varint.
-#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
+#![cfg_attr(not(test), allow(dead_code))] // unused DataInput helpers stay for the Java surface
 
 /// Cursor over a byte slice. Short reads yield zero and pin `pos` at the end
 /// rather than panic: callers pass well-formed Lucene blocks.
@@ -122,6 +122,11 @@ impl<'a> Reader<'a> {
             *b = self.read_byte();
         }
         u32::from_le_bytes(arr)
+    }
+
+    /// Advance `pos` by `n` bytes, pinning at EOF.
+    pub fn skip(&mut self, n: usize) {
+        self.pos = self.pos.saturating_add(n).min(self.buf.len());
     }
 }
 

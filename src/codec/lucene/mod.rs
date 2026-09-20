@@ -1,17 +1,14 @@
 //! Lucene 10.3.1 block codecs, as a bench competitor.
 //!
-//! This slice is the block-level building blocks (`ForUtil`, `ForDeltaUtil`,
-//! `PForUtil`, and the vint / group-vint primitives they sit on). A later
-//! slice wraps them as a `Codec`. Formats are byte-exact against
-//! `lucene-core-10.3.1`; see `lucene103-fixtures.tsv`.
+//! Block-level building blocks (`ForUtil`, `ForDeltaUtil`, `PForUtil`, and the
+//! vint / group-vint primitives they sit on). The `lucene-pfor` and
+//! `lucene-docs` adapters wrap them as [`crate::codec::Codec`]s. Formats are
+//! byte-exact against `lucene-core-10.3.1`; see `lucene103-fixtures.tsv`.
 //!
 //! Values are `u32` and the arithmetic is unsigned. Java's `int` is signed
 //! but Lucene only stores non-negative values, so every `>>>` is `>>` on
 //! `u32`. Where Java would misbehave on values `>= 2^31` (signed compares in
 //! `PForUtil.encode`), this port uses the natural unsigned extension.
-//!
-//! Not yet in [`crate::codec::all`]; a later slice wraps these as a `Codec`.
-#![cfg_attr(not(test), allow(dead_code))]
 
 pub mod for_delta;
 pub mod for_util;
@@ -22,22 +19,47 @@ pub const BLOCK_SIZE: usize = for_util::BLOCK_SIZE;
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
+pub(crate) fn parse_hex(s: &str) -> Vec<u8> {
+    assert!(s.len().is_multiple_of(2), "odd hex length");
+    (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap()).collect()
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+pub(crate) fn parse_u32s(s: &str) -> Vec<u32> {
+    if s.is_empty() {
+        return Vec::new();
+    }
+    s.split(',').map(|t| t.parse::<u32>().unwrap()).collect()
+}
+
+/// `(doc ids, .doc bytes)` for every `docs` line in the Lucene 10.3.1 fixtures.
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+pub(crate) fn docs_fixtures() -> Vec<(Vec<u32>, Vec<u8>)> {
+    include_str!("lucene103-fixtures.tsv")
+        .lines()
+        .filter(|line| !line.is_empty())
+        .filter_map(|line| {
+            let mut cols = line.split('\t');
+            let kind = cols.next().unwrap();
+            if kind != "docs" {
+                return None;
+            }
+            let _bpv = cols.next().unwrap();
+            let ints = parse_u32s(cols.next().unwrap());
+            let bytes = parse_hex(cols.next().unwrap());
+            Some((ints, bytes))
+        })
+        .collect()
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
-    use super::{BLOCK_SIZE, for_delta, for_util, pfor};
+    use super::{BLOCK_SIZE, for_delta, for_util, parse_hex, parse_u32s, pfor};
 
     const FIXTURES: &str = include_str!("lucene103-fixtures.tsv");
-
-    fn parse_hex(s: &str) -> Vec<u8> {
-        assert!(s.len().is_multiple_of(2), "odd hex length");
-        (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap()).collect()
-    }
-
-    fn parse_u32s(s: &str) -> Vec<u32> {
-        if s.is_empty() {
-            return Vec::new();
-        }
-        s.split(',').map(|t| t.parse::<u32>().unwrap()).collect()
-    }
 
     fn as_block(v: &[u32]) -> [u32; BLOCK_SIZE] {
         assert_eq!(v.len(), BLOCK_SIZE);

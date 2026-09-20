@@ -109,7 +109,9 @@ three `words.*` datasets stay aligned list-for-list.
 (control), `vbyte` (delta varint, linear-scan cursor — the baseline a skip
 structure must beat by more than it costs). Under test: `bp128`
 (SIMD bit-packing, 128-int blocks, varint tail — the Lucene/Tantivy shape),
-`bp128-skip` (the same with a skip table), `fastpfor128`, `streamvbyte`,
+`bp128-skip` (the same with a skip table), `fastpfor128`, `lucene-pfor`
+(Lucene 10.3.1 `PForUtil` 128-blocks + vint tail), `lucene-docs` (the
+docs-only `Lucene103` posting stream, two skip levels), `streamvbyte`,
 `roaring`, `elias-fano`, `pef` (fixed-128 partitioned Elias-Fano with
 per-partition all-ones/bitmap/EF selection).
 
@@ -122,6 +124,8 @@ Zipfian datasets, where most lists are one to three ints:
 | `bp128` | 1 byte num_bits per full 128-block; tail is `vbyte` |
 | `bp128-skip` | `bp128` plus 8 bytes of skip table per full 128-block (reported as `aux`) |
 | `fastpfor128` | 4-byte block-count word the crate always writes |
+| `lucene-pfor` | none (`n` and universe out of band); tail is Lucene vint |
+| `lucene-docs` | skip prefix on every 128-block (`vlong` + `vint15` + `vlong15`) and a `vint`+`vlong` per 4096-doc group (reported as `aux`) |
 | `streamvbyte` | lists padded to a multiple of 4 (one tag byte per group) |
 | `roaring` | 8-byte portable header + 8 bytes per container |
 | `elias-fano` | `sucds` select indices, ~130 bytes even for an empty list; the `aux` column reports them |

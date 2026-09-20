@@ -2,7 +2,7 @@
 //! prefix sum. Primitive-width thresholds (8 at bpv ≤ 3, 16 at ≤ 10, else 32)
 //! differ from [`super::for_util`] because the prefix sum is done in SIMD-like
 //! packed lanes and must not overflow a lane.
-#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
+#![cfg_attr(not(test), allow(dead_code))] // unused ForDelta helpers stay for the Java surface
 #![allow(clippy::needless_range_loop)] // fixed-index packed-lane loops, for LLVM
 #![allow(clippy::explicit_counter_loop)]
 

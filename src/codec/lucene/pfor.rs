@@ -5,7 +5,7 @@
 //! `[index u8][high-byte]` pairs. Java's heap compares are signed; this port
 //! uses unsigned comparison, which agrees on the non-negative values Lucene
 //! stores and is the natural extension past `2^31`.
-#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
+#![cfg_attr(not(test), allow(dead_code))] // skip() is for the Java surface; adapters use encode/decode
 
 use super::for_util::{self, BLOCK_SIZE, bits_required, num_bytes};
 use super::io::{Reader, write_vint};
