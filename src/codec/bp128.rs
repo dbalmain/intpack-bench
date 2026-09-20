@@ -163,16 +163,18 @@ impl Codec for Bp128 {
             Kind::Sorted => {
                 // Every full 128-block: one num_bits byte, then the packed bits.
                 let mut initial: Option<u32> = None;
-                for block in list.chunks_exact(BLOCK_LEN) {
+                let (blocks, tail) = list.as_chunks::<BLOCK_LEN>();
+                for block in blocks {
                     initial = Some(encode_block_sorted(&bp, initial, block, out));
                 }
-                encode_tail_sorted(initial, list.chunks_exact(BLOCK_LEN).remainder(), out);
+                encode_tail_sorted(initial, tail, out);
             }
             Kind::Unsorted => {
-                for block in list.chunks_exact(BLOCK_LEN) {
+                let (blocks, tail) = list.as_chunks::<BLOCK_LEN>();
+                for block in blocks {
                     encode_block_unsorted(&bp, block, out);
                 }
-                encode_tail_unsorted(list.chunks_exact(BLOCK_LEN).remainder(), out);
+                encode_tail_unsorted(tail, out);
             }
         }
     }

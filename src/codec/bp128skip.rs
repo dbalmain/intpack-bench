@@ -71,10 +71,11 @@ impl Codec for Bp128Skip {
         let table = out.len();
         out.resize(table + n_blocks * 8, 0);
         let packed = out.len();
+        let (blocks, tail) = list.as_chunks::<BLOCK_LEN>();
         match kind {
             Kind::Sorted => {
                 let mut initial: Option<u32> = None;
-                for (b, block) in list.chunks_exact(BLOCK_LEN).enumerate() {
+                for (b, block) in blocks.iter().enumerate() {
                     let byte_offset = (out.len() - packed) as u32;
                     let last = bp128::encode_block_sorted(&bp, initial, block, out);
                     let e = table + b * 8;
@@ -82,17 +83,17 @@ impl Codec for Bp128Skip {
                     out[e + 4..e + 8].copy_from_slice(&byte_offset.to_le_bytes());
                     initial = Some(last);
                 }
-                bp128::encode_tail_sorted(initial, list.chunks_exact(BLOCK_LEN).remainder(), out);
+                bp128::encode_tail_sorted(initial, tail, out);
             }
             Kind::Unsorted => {
-                for (b, block) in list.chunks_exact(BLOCK_LEN).enumerate() {
+                for (b, block) in blocks.iter().enumerate() {
                     let byte_offset = (out.len() - packed) as u32;
                     bp128::encode_block_unsorted(&bp, block, out);
                     let e = table + b * 8;
                     out[e..e + 4].copy_from_slice(&0u32.to_le_bytes());
                     out[e + 4..e + 8].copy_from_slice(&byte_offset.to_le_bytes());
                 }
-                bp128::encode_tail_unsorted(list.chunks_exact(BLOCK_LEN).remainder(), out);
+                bp128::encode_tail_unsorted(tail, out);
             }
         }
     }

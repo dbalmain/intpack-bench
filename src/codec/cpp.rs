@@ -58,7 +58,7 @@ fn encode_any<C: AnyLenCodec>(kind: Kind, list: &[u32], out: &mut Vec<u8>) {
 }
 
 fn decode_any<C: AnyLenCodec>(kind: Kind, n: usize, buf: &[u8], out: &mut Vec<u32>) {
-    let words: Vec<u32> = buf.chunks_exact(4).map(|c| u32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect();
+    let words: Vec<u32> = buf.as_chunks::<4>().0.iter().map(|&c| u32::from_le_bytes(c)).collect();
     let mut gaps = Vec::new();
     let mut codec = C::default();
     if let Err(e) = codec.decode(&words, &mut gaps, Some(n as u32)) {

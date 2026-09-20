@@ -47,7 +47,7 @@ impl Codec for FastPFor {
     }
 
     fn decode(&self, kind: Kind, _universe: u32, n: usize, buf: &[u8], out: &mut Vec<u32>) {
-        let words: Vec<u32> = buf.chunks_exact(4).map(|c| u32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect();
+        let words: Vec<u32> = buf.as_chunks::<4>().0.iter().map(|&c| u32::from_le_bytes(c)).collect();
         let mut gaps = Vec::new();
         let mut codec = FastPFor128::default();
         let _ = codec.decode(&words, &mut gaps, Some(n as u32));

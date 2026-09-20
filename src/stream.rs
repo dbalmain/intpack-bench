@@ -116,7 +116,7 @@ impl Dataset {
             let len = read_u32(&mut r)? as usize;
             let mut bytes = vec![0u8; len * 4];
             r.read_exact(&mut bytes)?;
-            lists.push(bytes.chunks_exact(4).map(|c| u32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect());
+            lists.push(bytes.as_chunks::<4>().0.iter().map(|&c| u32::from_le_bytes(c)).collect());
         }
         Ok(Self { meta, lists })
     }

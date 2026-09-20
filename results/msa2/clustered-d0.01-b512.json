@@ -14,28 +14,28 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 388813.0,
-      "ns_spread": 0.011931185428470756,
-      "cycles": 962765.0
+      "ns": 503319.0,
+      "ns_spread": 0.007464450974431838,
+      "cycles": 1250054.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 62397.00000000001,
-      "ns_spread": 0.03404009808163877,
-      "cycles": 155568.0
+      "ns": 61937.0,
+      "ns_spread": 0.024750956617207807,
+      "cycles": 154274.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 74691.0,
-      "ns_spread": 0.0165080130136161,
-      "cycles": 185870.0
+      "ns": 77396.0,
+      "ns_spread": 0.03365807018450566,
+      "cycles": 192400.0
     },
     "decode_hot_ints": 1031067,
     "open": {
       "runs": 100,
-      "ns": 932.0,
-      "ns_spread": 0.009656652360515022,
-      "cycles": 2493.0
+      "ns": 962.0000000000001,
+      "ns_spread": 0.010395010395010276,
+      "cycles": 2569.0
     },
     "intersect": [
       {
@@ -45,24 +45,24 @@
         "long_ints": 628609,
         "sample": {
           "runs": 100,
-          "ns": 158389.0,
-          "ns_spread": 0.009363023947370083,
-          "cycles": 393853.0
+          "ns": 159410.0,
+          "ns_spread": 0.010369487485101312,
+          "cycles": 395806.0
         }
       }
     ],
     "seek": {
       "runs": 100,
-      "ns": 2307214.0,
-      "ns_spread": 0.023518407915347254,
-      "cycles": 5732578.0
+      "ns": 2398664.0,
+      "ns_spread": 0.005408844256636194,
+      "cycles": 5959170.0
     },
     "seek_probes": 20000,
     "get": {
       "runs": 100,
-      "ns": 101030.0,
-      "ns_spread": 0.008136197169157675,
-      "cycles": 250888.0
+      "ns": 101722.0,
+      "ns_spread": 0.006891331275436975,
+      "cycles": 253824.0
     },
     "get_probes": 20000,
     "encode_peak_kb": 0,
@@ -84,28 +84,28 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 1286227.0,
-      "ns_spread": 0.0033104576408363377,
-      "cycles": 3197047.0
+      "ns": 1282118.0,
+      "ns_spread": 0.0029069087244699785,
+      "cycles": 3189272.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 919334.0,
-      "ns_spread": 0.006757065440851747,
-      "cycles": 2277619.0
+      "ns": 913263.0,
+      "ns_spread": 0.0026553139676084546,
+      "cycles": 2269348.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 1492506.0,
-      "ns_spread": 0.005652238583965492,
-      "cycles": 3699492.0
+      "ns": 1485110.0,
+      "ns_spread": 0.0026105810344014923,
+      "cycles": 3690973.0
     },
     "decode_hot_ints": 1031067,
     "open": {
       "runs": 100,
-      "ns": 952.0,
-      "ns_spread": 0.01050420168067227,
-      "cycles": 2521.0
+      "ns": 962.0000000000001,
+      "ns_spread": 0.010395010395010512,
+      "cycles": 2563.0
     },
     "intersect": [
       {
@@ -115,17 +115,17 @@
         "long_ints": 628609,
         "sample": {
           "runs": 100,
-          "ns": 1759490.0,
-          "ns_spread": 0.00290368231703505,
-          "cycles": 4370438.0
+          "ns": 1974193.0,
+          "ns_spread": 0.014844040071057118,
+          "cycles": 4911206.0
         }
       }
     ],
     "seek": {
-      "runs": 7,
-      "ns": 131058645.0,
-      "ns_spread": 0.0013426889923972584,
-      "cycles": 325821920.0
+      "runs": 14,
+      "ns": 132472815.0,
+      "ns_spread": 0.1298029788224852,
+      "cycles": 329202161.0
     },
     "seek_probes": 20000,
     "get": null,
@@ -149,28 +149,28 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 134214.0,
-      "ns_spread": 0.011347549435975383,
-      "cycles": 333189.0
+      "ns": 150934.0,
+      "ns_spread": 0.017259199385161725,
+      "cycles": 376236.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 302020.0,
-      "ns_spread": 0.009721210515859877,
-      "cycles": 753310.0
+      "ns": 296739.0,
+      "ns_spread": 0.010804107313160723,
+      "cycles": 740053.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 499041.0,
-      "ns_spread": 0.007245897631657519,
-      "cycles": 1240853.0
+      "ns": 493289.99999999994,
+      "ns_spread": 0.007332400818990976,
+      "cycles": 1226628.0
     },
     "decode_hot_ints": 1031067,
     "open": {
       "runs": 100,
-      "ns": 932.0,
-      "ns_spread": 0.001072961373390558,
-      "cycles": 2490.0
+      "ns": 962.0000000000001,
+      "ns_spread": 0.011434511434511433,
+      "cycles": 2563.0
     },
     "intersect": [
       {
@@ -180,21 +180,91 @@
         "long_ints": 628609,
         "sample": {
           "runs": 100,
-          "ns": 3943841.0,
-          "ns_spread": 0.004676912684867249,
-          "cycles": 9792403.0
+          "ns": 4379579.0,
+          "ns_spread": 0.004424397870206246,
+          "cycles": 10844355.0
         }
       }
     ],
     "seek": {
       "runs": 7,
-      "ns": 296843391.0,
-      "ns_spread": 0.0008467933180294386,
-      "cycles": 736553102.0
+      "ns": 329688637.0,
+      "ns_spread": 0.002732754177390712,
+      "cycles": 816960667.0
     },
     "seek_probes": 20000,
     "get": null,
     "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "bp128-skip",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": true,
+    "bytes": 324450,
+    "bits_per_int": 4.185702237180117,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -3.8681156640275054,
+    "aux_bits_per_int": 0.49653045986928146,
+    "encode": {
+      "runs": 100,
+      "ns": 153539.0,
+      "ns_spread": 0.016113169943792784,
+      "cycles": 382319.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 297491.0,
+      "ns_spread": 0.01026921822845061,
+      "cycles": 740150.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 492989.0,
+      "ns_spread": 0.007253711543259704,
+      "cycles": 1225544.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": {
+      "runs": 100,
+      "ns": 992.0,
+      "ns_spread": 0.020161290322580645,
+      "cycles": 2638.0
+    },
+    "intersect": [
+      {
+        "ratio": 1,
+        "pairs": 64,
+        "short_ints": 634443,
+        "long_ints": 628609,
+        "sample": {
+          "runs": 100,
+          "ns": 241465.0,
+          "ns_spread": 0.01489242747396115,
+          "cycles": 601314.0
+        }
+      }
+    ],
+    "seek": {
+      "runs": 100,
+      "ns": 3269966.0,
+      "ns_spread": 0.005824219579041495,
+      "cycles": 8121598.0
+    },
+    "seek_probes": 20000,
+    "get": {
+      "runs": 100,
+      "ns": 861324.0,
+      "ns_spread": 0.006140546414589632,
+      "cycles": 2138029.0
+    },
+    "get_probes": 20000,
     "encode_peak_kb": 0,
     "decode_peak_kb": 0,
     "longest_list": 20217
@@ -214,21 +284,21 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 1232615.0,
-      "ns_spread": 0.05082527796595044,
-      "cycles": 3063153.0
+      "ns": 1773424.0,
+      "ns_spread": 0.31469180523101076,
+      "cycles": 4385113.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 668100.0,
-      "ns_spread": 0.010016464601107618,
-      "cycles": 1656537.0
+      "ns": 1110474.0,
+      "ns_spread": 0.03191159811035648,
+      "cycles": 2748765.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 1067975.0,
-      "ns_spread": 0.007598492474074767,
-      "cycles": 2650994.0
+      "ns": 1074176.0,
+      "ns_spread": 0.008318934699714014,
+      "cycles": 2665372.0
     },
     "decode_hot_ints": 1031067,
     "open": null,
@@ -256,21 +326,21 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 274187.0,
-      "ns_spread": 0.03146028075729338,
-      "cycles": 679235.0
+      "ns": 325744.0,
+      "ns_spread": 0.018637334839628667,
+      "cycles": 808019.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 301679.0,
-      "ns_spread": 0.011856973803280971,
-      "cycles": 749464.0
+      "ns": 301268.0,
+      "ns_spread": 0.013200870985302123,
+      "cycles": 750007.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 503510.0,
-      "ns_spread": 0.006607614545887867,
-      "cycles": 1250594.0
+      "ns": 503438.99999999994,
+      "ns_spread": 0.007003827673263296,
+      "cycles": 1251916.0
     },
     "decode_hot_ints": 1031067,
     "open": null,
@@ -298,28 +368,28 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 3989879.0,
-      "ns_spread": 0.010373246907988938,
-      "cycles": 9881606.0
+      "ns": 3983872.0000000005,
+      "ns_spread": 0.013404296121963756,
+      "cycles": 9882785.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 3997493.0000000005,
-      "ns_spread": 0.019662073204380726,
-      "cycles": 9924766.0
+      "ns": 4492903.0,
+      "ns_spread": 0.08374095768370694,
+      "cycles": 11156824.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 5764537.0,
-      "ns_spread": 0.008764797589121208,
-      "cycles": 14280812.0
+      "ns": 7417838.0,
+      "ns_spread": 0.006129144367941171,
+      "cycles": 18404579.0
     },
     "decode_hot_ints": 1031067,
     "open": {
       "runs": 100,
-      "ns": 489774.0,
-      "ns_spread": 0.04919615986148725,
-      "cycles": 1214836.0
+      "ns": 485766.0,
+      "ns_spread": 0.032237744099010514,
+      "cycles": 1203932.0
     },
     "intersect": [
       {
@@ -329,24 +399,24 @@
         "long_ints": 628609,
         "sample": {
           "runs": 100,
-          "ns": 265792.0,
-          "ns_spread": 0.0126640380447869,
-          "cycles": 660805.0
+          "ns": 264979.0,
+          "ns_spread": 0.012589676917793486,
+          "cycles": 660205.0
         }
       }
     ],
     "seek": {
       "runs": 100,
-      "ns": 2418022.0,
-      "ns_spread": 0.005146355161367432,
-      "cycles": 6011073.0
+      "ns": 2391199.0,
+      "ns_spread": 0.0028203424307219936,
+      "cycles": 5943593.0
     },
     "seek_probes": 20000,
     "get": {
       "runs": 100,
-      "ns": 677288.0,
-      "ns_spread": 0.007987739336884752,
-      "cycles": 1682484.0
+      "ns": 688328.0,
+      "ns_spread": 0.008921618763147801,
+      "cycles": 1707894.0
     },
     "get_probes": 20000,
     "encode_peak_kb": 0,
@@ -367,29 +437,29 @@
     "excess_bits_per_int": 2.0018011734419154,
     "aux_bits_per_int": 1.4506048110741463,
     "encode": {
-      "runs": 83,
-      "ns": 11943755.0,
-      "ns_spread": 0.005781263932490243,
-      "cycles": 29692516.0
+      "runs": 100,
+      "ns": 11882116.0,
+      "ns_spread": 0.002455454903823528,
+      "cycles": 29521661.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 1788294.0,
-      "ns_spread": 0.004969540802574968,
-      "cycles": 4430553.0
+      "ns": 1760580.0,
+      "ns_spread": 0.0150921855297686,
+      "cycles": 4363908.0
     },
     "decode_hot": {
       "runs": 100,
-      "ns": 2824870.0,
-      "ns_spread": 0.05212912452608438,
-      "cycles": 7004674.0
+      "ns": 2904588.0,
+      "ns_spread": 0.006746912126607973,
+      "cycles": 7211517.0
     },
     "decode_hot_ints": 1031067,
     "open": {
       "runs": 100,
-      "ns": 174880.0,
-      "ns_spread": 0.0222323879231473,
-      "cycles": 434060.0
+      "ns": 164981.0,
+      "ns_spread": 0.017189858226098764,
+      "cycles": 412359.0
     },
     "intersect": [
       {
@@ -399,26 +469,306 @@
         "long_ints": 628609,
         "sample": {
           "runs": 100,
-          "ns": 1031176.0,
-          "ns_spread": 0.011406394252775473,
-          "cycles": 2563937.0
+          "ns": 1038779.0000000001,
+          "ns_spread": 0.003964269589585465,
+          "cycles": 2585287.0
         }
       }
     ],
     "seek": {
       "runs": 100,
-      "ns": 2126733.0,
-      "ns_spread": 0.045088405549732855,
-      "cycles": 5278938.0
+      "ns": 2201050.0,
+      "ns_spread": 0.004957179527952568,
+      "cycles": 5461972.0
     },
     "seek_probes": 20000,
     "get": {
       "runs": 100,
-      "ns": 524310.0,
-      "ns_spread": 0.008161202342125841,
-      "cycles": 1301485.0
+      "ns": 525621.0,
+      "ns_spread": 0.008348220485863388,
+      "cycles": 1303376.0
     },
     "get_probes": 20000,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "pef",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": false,
+    "bytes": 209086,
+    "bits_per_int": 2.697400949184904,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -5.356416952022719,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 1177631.0,
+      "ns_spread": 0.013127201984322764,
+      "cycles": 2930206.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 3158246.0,
+      "ns_spread": 0.005535667582575898,
+      "cycles": 7836448.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 4395018.0,
+      "ns_spread": 0.0019467497061445482,
+      "cycles": 10909792.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": {
+      "runs": 100,
+      "ns": 990.9999999999999,
+      "ns_spread": 0.010090817356205739,
+      "cycles": 2630.0
+    },
+    "intersect": [
+      {
+        "ratio": 1,
+        "pairs": 64,
+        "short_ints": 634443,
+        "long_ints": 628609,
+        "sample": {
+          "runs": 100,
+          "ns": 440781.0,
+          "ns_spread": 0.00899993420769044,
+          "cycles": 1093415.0
+        }
+      }
+    ],
+    "seek": {
+      "runs": 100,
+      "ns": 5833440.0,
+      "ns_spread": 0.005626525686387449,
+      "cycles": 14477068.0
+    },
+    "seek_probes": 20000,
+    "get": {
+      "runs": 100,
+      "ns": 2223623.0,
+      "ns_spread": 0.003847774555309061,
+      "cycles": 5519141.0
+    },
+    "get_probes": 20000,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "cpp-simdfastpfor128",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": false,
+    "bytes": 27936,
+    "bits_per_int": 0.36039999290449615,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -7.693417908303126,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 1004102.9999999999,
+      "ns_spread": 0.018997055082994593,
+      "cycles": 2490524.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 644755.0,
+      "ns_spread": 0.006014687749610317,
+      "cycles": 1597710.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 1000106.0,
+      "ns_spread": 0.0034746316890409616,
+      "cycles": 2482154.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "cpp-simdbinarypacking",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": false,
+    "bytes": 286764,
+    "bits_per_int": 3.699518312044134,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -4.354299589163489,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 264388.0,
+      "ns_spread": 0.013873549480309243,
+      "cycles": 658371.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 612234.0,
+      "ns_spread": 0.006595517400209723,
+      "cycles": 1523424.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 957916.0,
+      "ns_spread": 0.0026140079088354303,
+      "cycles": 2381755.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "cpp-optpfor",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": false,
+    "bytes": 39968,
+    "bits_per_int": 0.515623815736215,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -7.538194085471408,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 8348042.0,
+      "ns_spread": 0.0025417936325667742,
+      "cycles": 20736473.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 677588.0,
+      "ns_spread": 0.005159477440568605,
+      "cycles": 1682192.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 1039950.9999999999,
+      "ns_spread": 0.002253952349678014,
+      "cycles": 2584481.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "cpp-simdpfor",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": false,
+    "bytes": 117588,
+    "bits_per_int": 1.5169929254601193,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -6.536824975747503,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 1198601.0,
+      "ns_spread": 0.006060398748207285,
+      "cycles": 2977846.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 630348.0,
+      "ns_spread": 0.00772589109507764,
+      "cycles": 1567126.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 1006947.9999999999,
+      "ns_spread": 0.004885058612758439,
+      "cycles": 2499023.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 20217
+  },
+  {
+    "dataset": "clustered-d0.01-b512",
+    "kind": "sorted",
+    "codec": "cpp-bp32",
+    "lists": 64,
+    "ints": 620111,
+    "error": null,
+    "streaming_encoder": false,
+    "bytes": 101008,
+    "bits_per_int": 1.3030957360859587,
+    "entropy_bits_per_int": 8.053817901207623,
+    "excess_bits_per_int": -6.750722165121664,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 302541.0,
+      "ns_spread": 0.025004875372263594,
+      "cycles": 751032.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 674722.0,
+      "ns_spread": 0.005879458502909347,
+      "cycles": 1670537.0
+    },
+    "decode_hot": {
+      "runs": 100,
+      "ns": 1047374.9999999999,
+      "ns_spread": 0.008953813104188933,
+      "cycles": 2594763.0
+    },
+    "decode_hot_ints": 1031067,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
     "encode_peak_kb": 0,
     "decode_peak_kb": 0,
     "longest_list": 20217
