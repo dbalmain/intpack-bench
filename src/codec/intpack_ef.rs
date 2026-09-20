@@ -8,7 +8,7 @@ use crate::stream::Kind;
 use intpack::Cursor as IpCursor;
 use intpack::elias_fano;
 
-use super::{Caps, Codec, Cursor};
+use super::{Caps, Codec, Cursor, Prepared};
 
 pub struct IntpackEf;
 
@@ -39,6 +39,25 @@ impl Codec for IntpackEf {
 
     fn get(&self, _kind: Kind, universe: u32, n: usize, buf: &[u8], i: usize) -> Option<u32> {
         (i < n).then(|| elias_fano::get(universe, n, buf, i))
+    }
+
+    fn open<'a>(&self, _kind: Kind, universe: u32, n: usize, buf: &'a [u8]) -> Option<Box<dyn Prepared + 'a>> {
+        Some(Box::new(EfPrepared { view: elias_fano::View::new(universe, n, buf), n }))
+    }
+}
+
+struct EfPrepared<'a> {
+    view: elias_fano::View<'a>,
+    n: usize,
+}
+
+impl Prepared for EfPrepared<'_> {
+    fn cursor(&self) -> Option<Box<dyn Cursor + '_>> {
+        Some(Box::new(EfCursor { cur: self.view.cursor() }))
+    }
+
+    fn get(&self, i: usize) -> Option<u32> {
+        (i < self.n).then(|| self.view.get(i))
     }
 }
 
