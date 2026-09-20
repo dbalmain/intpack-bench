@@ -29,18 +29,25 @@ impl Codec for StreamVByte {
         let coder = Coder1234::new();
         let n_groups = list.len().div_ceil(4);
         let padded_len = n_groups * 4;
-        let mut padded = list.to_vec();
-        let pad = list.last().copied().unwrap_or(0);
-        padded.resize(padded_len, pad);
-        let (tag_len, data_len) = Coder1234::max_compressed_bytes(padded_len);
-        let mut buf = vec![0u8; tag_len + data_len];
-        let (tags, data) = buf.split_at_mut(tag_len);
-        let written = match kind {
-            Kind::Sorted => coder.encode_deltas(0, &padded, tags, data),
-            Kind::Unsorted => coder.encode(&padded, tags, data),
+        // Only copy when padding is actually needed; whole groups encode in place.
+        let mut padded = Vec::new();
+        let input: &[u32] = if padded_len == list.len() {
+            list
+        } else {
+            padded.reserve(padded_len);
+            padded.extend_from_slice(list);
+            padded.resize(padded_len, list.last().copied().unwrap_or(0));
+            &padded
         };
-        out.extend_from_slice(tags);
-        out.extend_from_slice(&data[..written]);
+        let (tag_len, data_len) = Coder1234::max_compressed_bytes(padded_len);
+        let start = out.len();
+        out.resize(start + tag_len + data_len, 0);
+        let (tags, data) = out[start..].split_at_mut(tag_len);
+        let written = match kind {
+            Kind::Sorted => coder.encode_deltas(0, input, tags, data),
+            Kind::Unsorted => coder.encode(input, tags, data),
+        };
+        out.truncate(start + tag_len + written);
     }
 
     fn decode(&self, kind: Kind, _universe: u32, n: usize, buf: &[u8], out: &mut Vec<u32>) {
@@ -48,16 +55,18 @@ impl Codec for StreamVByte {
         let n_groups = n.div_ceil(4);
         let tags = &buf[..n_groups];
         let data = &buf[n_groups..];
-        let mut values = vec![0u32; n_groups * 4];
+        // Decode straight into `out` (padded to whole groups), then drop the padding.
+        let start = out.len();
+        out.resize(start + n_groups * 4, 0);
         match kind {
             Kind::Sorted => {
-                let _ = coder.decode_deltas(0, tags, data, &mut values);
+                let _ = coder.decode_deltas(0, tags, data, &mut out[start..]);
             }
             Kind::Unsorted => {
-                let _ = coder.decode(tags, data, &mut values);
+                let _ = coder.decode(tags, data, &mut out[start..]);
             }
         }
-        out.extend_from_slice(&values[..n]);
+        out.truncate(start + n);
     }
 }
 
