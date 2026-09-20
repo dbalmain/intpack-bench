@@ -63,3 +63,86 @@ mod tests {
         super::super::conformance(&super::IntpackPef);
     }
 }
+
+#[cfg(test)]
+mod pef_repro {
+    use crate::codec::{self, Codec as _, Prepared};
+    use crate::stream::Kind;
+
+    fn naive_count(a: &[u32], b: &[u32]) -> usize {
+        let (mut i, mut j, mut n) = (0, 0, 0);
+        while i < a.len() && j < b.len() {
+            match a[i].cmp(&b[j]) {
+                std::cmp::Ordering::Less => i += 1,
+                std::cmp::Ordering::Greater => j += 1,
+                std::cmp::Ordering::Equal => {
+                    n += 1;
+                    i += 1;
+                    j += 1;
+                }
+            }
+        }
+        n
+    }
+
+    fn leapfrog(a: &dyn Prepared, b: &dyn Prepared) -> usize {
+        let (Some(mut a), Some(mut b)) = (a.cursor(), b.cursor()) else {
+            return 0;
+        };
+        let mut count = 0;
+        let Some(mut x) = a.next() else { return 0 };
+        while let Some(y) = b.next_geq(x) {
+            if y == x {
+                count += 1;
+                let Some(nx) = a.next() else { break };
+                x = nx;
+            } else {
+                let Some(nx) = a.next_geq(y) else { break };
+                x = nx;
+            }
+        }
+        count
+    }
+
+    /// Arena-append encode + leapfrog on dense/clustered lists, matching the
+    /// bench's intersect path.
+    #[test]
+    fn leapfrog_matches_naive_on_dense_lists() {
+        let universe = 1 << 20;
+        let codec = &super::IntpackPef;
+        let mut arena = Vec::new();
+        let mut spans = Vec::new();
+        let mut lists = Vec::new();
+        let mut state = 0xdead_beef_1234_5678u64;
+        for round in 0..8 {
+            let mut list = Vec::new();
+            for v in 0..universe {
+                state ^= state << 7;
+                state ^= state >> 9;
+                state ^= state << 8;
+                if state.is_multiple_of(10) && (state >> 32).is_multiple_of(round + 3) {
+                    list.push(v);
+                }
+            }
+            let start = arena.len();
+            codec.encode(Kind::Sorted, universe, &list, &mut arena);
+            spans.push((start, arena.len() - start));
+            lists.push(list);
+        }
+        let prepared: Vec<Box<dyn Prepared>> = lists
+            .iter()
+            .zip(&spans)
+            .map(|(l, &(o, n))| codec::prepare(codec, Kind::Sorted, universe, l.len(), &arena[o..o + n]))
+            .collect();
+        for s in 0..lists.len() {
+            for l in 0..lists.len() {
+                if s == l {
+                    continue;
+                }
+                let got = leapfrog(prepared[s].as_ref(), prepared[l].as_ref());
+                let want = naive_count(&lists[s], &lists[l]);
+                assert_eq!(got, want, "lists {s}x{l}: {got} vs naive {want}");
+            }
+        }
+    }
+}
