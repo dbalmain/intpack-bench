@@ -19,6 +19,16 @@
         esac
         exec ${pkgs.cmake}/bin/cmake -DCMAKE_INSTALL_LIBDIR=lib "$@"
       '';
+      # FastPFor's CMakeLists downloads CPM.cmake at configure time, which the
+      # nix sandbox forbids. CPM skips the download when the file is already
+      # in $CPM_SOURCE_CACHE with the expected hash, so pre-fetch it there.
+      cpmCache = pkgs: pkgs.runCommand "cpm-cache" { } ''
+        mkdir -p $out/cpm
+        cp ${pkgs.fetchurl {
+          url = "https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.0/CPM.cmake";
+          hash = "sha256-ICC0/ELbpEgXmD4GNC5oLs/D0vSEpYHxHMVzH75Nzoo=";
+        }} $out/cpm/CPM_0.42.0.cmake
+      '';
     in {
       packages = forAll (pkgs:
         let
@@ -40,6 +50,7 @@
             # The gcc wrapper drops `-march=native` unless this is 0. FastPFor's
             # `cpp_native` feature relies on that flag for SSSE3/SSE4.2.
             NIX_ENFORCE_NO_NATIVE = "0";
+            CPM_SOURCE_CACHE = cpmCache pkgs;
           };
         in rec {
           intpack-bench = mk { features = []; };
@@ -78,6 +89,7 @@
           RUSTFLAGS = "-C target-cpu=native";
           # See packages: FastPFor's cmake `-march=native` must survive the wrapper.
           NIX_ENFORCE_NO_NATIVE = "0";
+          CPM_SOURCE_CACHE = cpmCache pkgs;
         };
       });
     };
