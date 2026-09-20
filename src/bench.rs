@@ -306,13 +306,11 @@ fn intersect_bench(
         attempts += 1;
         let s = rng.random_range(0..by_len.len());
         let want = lens[s] * ratio as usize;
-        // Nearest list by length to the wanted partner length.
+        // Nearest list by length to the wanted partner length, other than
+        // the short list itself (at ratio 1 the nearest is always `s`).
         let p = lens.partition_point(|&l| l < want);
-        let cands = [p.saturating_sub(1), p.min(lens.len() - 1)];
-        let l = *cands.iter().min_by_key(|&&c| lens[c].abs_diff(want))?;
-        if l == s {
-            continue;
-        }
+        let cands = [p.saturating_sub(1), p, p + 1];
+        let l = *cands.iter().filter(|&&c| c < lens.len() && c != s).min_by_key(|&&c| lens[c].abs_diff(want))?;
         let actual = lens[l] as f64 / lens[s] as f64;
         if actual < ratio as f64 * 0.5 || actual > ratio as f64 * 2.0 {
             continue;

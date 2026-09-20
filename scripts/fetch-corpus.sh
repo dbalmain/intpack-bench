@@ -31,8 +31,12 @@ fi
 # enwik9 — first 10^9 bytes of English Wikipedia XML (Hutter Prize), split
 # one page per file so it behaves like a directory of documents.
 if [ ! -d enwik9 ]; then
-  fetch https://mattmahoney.net/dc/enwik9.zip enwik9.zip
-  unzip -q enwik9.zip && rm enwik9.zip
+  # The zip holds a single file also named enwik9; keep it out of the way of
+  # the directory the split writes into.
+  if [ ! -f enwik9.xml ]; then
+    fetch https://mattmahoney.net/dc/enwik9.zip enwik9.zip
+    unzip -q enwik9.zip && rm enwik9.zip && mv enwik9 enwik9.xml
+  fi
   mkdir enwik9
   awk -v dir=enwik9 '
     /<page>/ {
@@ -41,8 +45,8 @@ if [ ! -d enwik9 ]; then
     }
     f != "" { print > f }
     /<\/page>/ { close(f); f = "" }
-  ' enwik9
-  rm enwik9
+  ' enwik9.xml
+  rm enwik9.xml
 fi
 
 du -sh "$PWD"/* 2>/dev/null

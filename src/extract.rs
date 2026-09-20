@@ -285,14 +285,14 @@ fn fnv1a(seed: u64, term: &[u8]) -> u64 {
     h
 }
 
-/// Keep-modulus so expected kept postings ≈ `max_ints`. Floor-division prefers
-/// overshooting when `P` is just above `max_ints` (D stays 1) rather than
-/// dropping half the corpus.
+/// Keep-modulus so expected kept postings are at most `max_ints`.
 fn sample_d(total_postings: usize, max_ints: usize) -> u64 {
     if max_ints == 0 {
         return 0;
     }
-    (total_postings / max_ints).max(1) as u64
+    // Ceiling, so `max_ints` is a cap rather than a value the kept count
+    // can overshoot by up to 2x.
+    total_postings.div_ceil(max_ints).max(1) as u64
 }
 
 fn keep_term(term: &[u8], seed: u64, d: u64) -> bool {
@@ -444,7 +444,8 @@ mod tests {
     fn sample_d_keeps_everything_when_under_budget() {
         assert_eq!(sample_d(10, 100), 1);
         assert_eq!(sample_d(100, 100), 1);
-        assert_eq!(sample_d(250, 100), 2);
+        assert_eq!(sample_d(101, 100), 2);
+        assert_eq!(sample_d(250, 100), 3);
         assert_eq!(sample_d(1, 0), 0);
     }
 

@@ -95,8 +95,13 @@ dictionary** whose list-length distribution puts most lists under one
 
 Corpus (`extract <dir>`): `words.docs`, `trigrams.docs` (sorted),
 `words.freqs`, `words.posdeltas`, `docs.sizes`, `docs.mtimes` (unsorted).
-Terms are sampled by hash to cap the size while preserving the list-length
-distribution; lists are never truncated.
+Files are visited in sorted-path order (docID = position in that order);
+VCS, build and package directories are skipped, as are files over 8 MiB or
+with a NUL in the first 8 KiB. Words are `[A-Za-z0-9_]+` runs, lowercased,
+2–64 bytes; trigrams are overlapping raw-byte windows. Terms are sampled by
+hash (`fnv1a(seed, term) % D == 0`) to cap the size at `--max-ints` while
+preserving the list-length distribution; lists are never truncated, and the
+three `words.*` datasets stay aligned list-for-list.
 
 ## Codecs
 
@@ -105,6 +110,18 @@ distribution; lists are never truncated.
 structure must beat by more than it costs). Under test: `bp128`
 (SIMD bit-packing, 128-int blocks, varint tail — the Lucene/Tantivy shape),
 `fastpfor128`, `streamvbyte`, `roaring`, `elias-fano`.
+
+Each adapter is the crate's own on-disk format, fixed costs included, because
+that is what you would pay by adopting it. The fixed costs matter on the
+Zipfian datasets, where most lists are one to three ints:
+
+| codec | per-list overhead beyond the payload |
+|---|---|
+| `bp128` | 1 byte num_bits per full 128-block; tail is `vbyte` |
+| `fastpfor128` | 4-byte block-count word the crate always writes |
+| `streamvbyte` | lists padded to a multiple of 4 (one tag byte per group) |
+| `roaring` | 8-byte portable header + 8 bytes per container |
+| `elias-fano` | `sucds` select indices, ~130 bytes even for an empty list; the `aux` column reports them |
 
 ### Adding one
 
