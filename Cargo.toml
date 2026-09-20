@@ -7,7 +7,7 @@ description = "Benchmark harness for integer sequence codecs: synthetic and corp
 repository = "https://github.com/dbalmain/intpack-bench"
 
 [dependencies]
-intpack = { path = "/home/dave/w/intpack-wt/vbyte" }
+intpack = { path = "../intpack" }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
