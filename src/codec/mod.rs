@@ -36,6 +36,7 @@ pub mod bp128skip;
 pub mod cpp;
 pub mod eliasfano;
 pub mod fastpfor;
+pub mod intpack_bp128;
 pub mod pef;
 pub mod raw;
 pub mod roaring;
@@ -148,6 +149,8 @@ pub fn all() -> Vec<Box<dyn Codec>> {
         Box::new(vbyte::VByte),
         Box::new(bp128::Bp128),
         Box::new(bp128skip::Bp128Skip),
+        Box::new(intpack_bp128::IpBp128),
+        Box::new(intpack_bp128::IpBp128Skip),
         Box::new(fastpfor::FastPFor),
         Box::new(streamvbyte::StreamVByte),
         Box::new(roaring::Roaring),
