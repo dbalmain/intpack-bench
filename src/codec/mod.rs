@@ -117,8 +117,9 @@ pub trait Codec: Sync {
     fn decode(&self, kind: Kind, universe: u32, n: usize, buf: &[u8], out: &mut Vec<u32>);
 
     /// Bytes of `buf` spent on skip/index structures rather than payload, if
-    /// the codec can tell. Reported as aux bits/int.
-    fn aux_bytes(&self, _n: usize, _buf: &[u8]) -> Option<usize> {
+    /// the codec can tell. Reported as aux bits/int. `universe` is the same
+    /// out-of-band bound passed to encode and decode.
+    fn aux_bytes(&self, _universe: u32, _n: usize, _buf: &[u8]) -> Option<usize> {
         None
     }
 

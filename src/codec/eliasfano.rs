@@ -46,7 +46,7 @@ impl Codec for EliasFanoCodec {
         }
     }
 
-    fn aux_bytes(&self, _n: usize, buf: &[u8]) -> Option<usize> {
+    fn aux_bytes(&self, _universe: u32, _n: usize, buf: &[u8]) -> Option<usize> {
         // Payload is the high/low bit vectors; the DArray select indices
         // (select1, plus the select0 index `enable_rank` adds) are the
         // index overhead. Re-parse the leading DArray to measure them.

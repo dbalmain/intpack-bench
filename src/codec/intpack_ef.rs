@@ -1,7 +1,7 @@
 //! intpack's `elias_fano` codec: plain Elias-Fano with a sampled select
 //! index, so a fresh seek jumps straight to the target region rather than
-//! walking the highs. `aux_bytes` reports the select samples — 4 bytes per
-//! 256 elements, against sucds's ~1.3 bits/int of select1/select0 indices.
+//! walking the highs. Short highs omit the index; long highs use two-level
+//! select-one and select-zero samples.
 
 use crate::stream::Kind;
 
@@ -29,9 +29,8 @@ impl Codec for IntpackEf {
         elias_fano::decode(universe, n, buf, out);
     }
 
-    fn aux_bytes(&self, n: usize, buf: &[u8]) -> Option<usize> {
-        let _ = n;
-        Some(elias_fano::aux_bytes(buf))
+    fn aux_bytes(&self, universe: u32, n: usize, _buf: &[u8]) -> Option<usize> {
+        Some(elias_fano::aux_len(universe, n))
     }
 
     fn cursor<'a>(&self, universe: u32, n: usize, buf: &'a [u8]) -> Option<Box<dyn Cursor + 'a>> {

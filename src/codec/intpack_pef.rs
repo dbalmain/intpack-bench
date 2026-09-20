@@ -29,8 +29,8 @@ impl Codec for IntpackPef {
         pef::decode(universe, n, buf, out);
     }
 
-    fn aux_bytes(&self, n: usize, buf: &[u8]) -> Option<usize> {
-        Some(pef::aux_bytes(n, buf))
+    fn aux_bytes(&self, universe: u32, n: usize, buf: &[u8]) -> Option<usize> {
+        Some(pef::aux_bytes(universe, n, buf))
     }
 
     fn cursor<'a>(&self, universe: u32, n: usize, buf: &'a [u8]) -> Option<Box<dyn Cursor + 'a>> {

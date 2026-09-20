@@ -123,7 +123,7 @@ impl Codec for Bp128Skip {
         }
     }
 
-    fn aux_bytes(&self, n: usize, _buf: &[u8]) -> Option<usize> {
+    fn aux_bytes(&self, _universe: u32, n: usize, _buf: &[u8]) -> Option<usize> {
         Some(n / BLOCK_LEN * 8)
     }
 

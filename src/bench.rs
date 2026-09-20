@@ -175,8 +175,12 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
     let entropy: f64 = ds.lists.iter().map(|l| entropy_bits(kind, universe, l)).sum();
     rec.entropy_bits_per_int = entropy / ints as f64;
     rec.excess_bits_per_int = rec.bits_per_int - rec.entropy_bits_per_int;
-    let aux: Option<usize> =
-        ds.lists.iter().zip(&arena.spans).map(|(l, &(o, n))| codec.aux_bytes(l.len(), &arena.bytes[o..o + n])).sum();
+    let aux: Option<usize> = ds
+        .lists
+        .iter()
+        .zip(&arena.spans)
+        .map(|(l, &(o, n))| codec.aux_bytes(ds.meta.universe, l.len(), &arena.bytes[o..o + n]))
+        .sum();
     rec.aux_bits_per_int = aux.map(|a| a as f64 * 8.0 / ints as f64);
 
     // ── decode, arena order ──
