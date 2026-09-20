@@ -42,6 +42,7 @@ pub mod intpack_fastpfor;
 pub mod intpack_pef;
 pub mod intpack_streamvbyte;
 pub mod intpack_vbyte;
+pub mod lucene;
 pub mod pef;
 pub mod raw;
 pub mod roaring;
