@@ -92,7 +92,11 @@ impl Codec for Pef {
         let layout = Layout::new(universe, n, buf);
         for partition_index in 0..layout.partition_count {
             let partition = layout.partition(partition_index);
-            out.extend((0..partition.len).filter_map(|index| partition.value_at(index)));
+            let mut position = partition.position_at(0);
+            while let Some(current) = position {
+                out.push((partition.start + current.local as u64) as u32);
+                position = partition.next_after(&current);
+            }
         }
     }
 
@@ -296,8 +300,14 @@ impl<'a> Layout<'a> {
     }
 
     fn upper_bound(&self, partition_index: usize) -> u32 {
-        let high = select_one(&self.buf[self.upper_high_start..self.type_start], self.upper_high_bits, partition_index)
-            .map_or(0, |position| position - partition_index);
+        let position =
+            select_one(&self.buf[self.upper_high_start..self.type_start], self.upper_high_bits, partition_index)
+                .unwrap_or(0);
+        self.upper_bound_at(partition_index, position)
+    }
+
+    fn upper_bound_at(&self, partition_index: usize, high_position: usize) -> u32 {
+        let high = high_position - partition_index;
         let low = read_bits(
             &self.buf[self.upper_low_start..self.upper_high_start],
             partition_index * usize::from(self.upper_l),
@@ -322,8 +332,16 @@ impl<'a> Layout<'a> {
 
     fn partition(&self, partition_index: usize) -> Partition<'a> {
         count_partition_decode();
-        let hi = u64::from(self.upper_bound(partition_index));
-        let start = if partition_index == 0 { 0 } else { u64::from(self.upper_bound(partition_index - 1)) + 1 };
+        let upper_highs = &self.buf[self.upper_high_start..self.type_start];
+        let (start, hi) = if partition_index == 0 {
+            (0, u64::from(self.upper_bound(0)))
+        } else {
+            let previous_position = select_one(upper_highs, self.upper_high_bits, partition_index - 1).unwrap_or(0);
+            let previous = self.upper_bound_at(partition_index - 1, previous_position);
+            let position =
+                find_next_one(upper_highs, self.upper_high_bits, previous_position + 1).unwrap_or(previous_position);
+            (u64::from(previous) + 1, u64::from(self.upper_bound_at(partition_index, position)))
+        };
         let universe = (hi + 1 - start) as usize;
         let len = (self.n - partition_index * PARTITION_SIZE).min(PARTITION_SIZE);
         let partition_type = (self.buf[self.type_start + partition_index / 4] >> ((partition_index % 4) * 2)) & 3;
@@ -407,19 +425,8 @@ impl Partition<'_> {
                 let index = count_ones_before(bits, local);
                 (index >= from_index).then_some(Position { index, local, high_position: 0 })
             }
-            PartitionData::EliasFano { .. } => {
-                let mut low = from_index;
-                let mut high = self.len;
-                while low < high {
-                    let middle = low + (high - low) / 2;
-                    let position = self.position_at(middle)?;
-                    if position.local < target {
-                        low = middle + 1;
-                    } else {
-                        high = middle;
-                    }
-                }
-                self.position_at(low)
+            PartitionData::EliasFano { lows, highs, low_width, high_bits } => {
+                find_ef_geq(lows, highs, *low_width, *high_bits, target, from_index)
             }
         }
     }
@@ -445,10 +452,57 @@ impl Partition<'_> {
     }
 }
 
+fn find_ef_geq(
+    lows: &[u8],
+    highs: &[u8],
+    low_width: u8,
+    high_bits: usize,
+    target: usize,
+    from_index: usize,
+) -> Option<Position> {
+    let target_high = target >> low_width;
+    let mut index = 0usize;
+    for (word_index, chunk) in highs.chunks(8).enumerate() {
+        let mut word_bytes = [0u8; 8];
+        word_bytes[..chunk.len()].copy_from_slice(chunk);
+        let mut word = u64::from_le_bytes(word_bytes);
+        if word_index * 64 + 64 > high_bits {
+            word &= trailing_mask(high_bits - word_index * 64);
+        }
+        let ones = word.count_ones() as usize;
+        if index + ones <= from_index {
+            index += ones;
+            continue;
+        }
+        if word != 0 {
+            let last_position = word_index * 64 + (u64::BITS - 1 - word.leading_zeros()) as usize;
+            let last_high = last_position - (index + ones - 1);
+            if last_high < target_high {
+                index += ones;
+                continue;
+            }
+        }
+        while word != 0 {
+            let high_position = word_index * 64 + word.trailing_zeros() as usize;
+            if index >= from_index {
+                let high = high_position - index;
+                let low = read_bits(lows, index * usize::from(low_width), low_width) as usize;
+                let local = (high << low_width) | low;
+                if local >= target {
+                    return Some(Position { index, local, high_position });
+                }
+            }
+            index += 1;
+            word &= word - 1;
+        }
+    }
+    None
+}
+
 fn count_ones_before(bytes: &[u8], bit: usize) -> usize {
     let full_bytes = bit / 8;
     let mut count: usize = bytes[..full_bytes].iter().map(|byte| byte.count_ones() as usize).sum();
-    if bit % 8 != 0 {
+    if !bit.is_multiple_of(8) {
         count += (bytes[full_bytes] & ((1 << (bit % 8)) - 1)).count_ones() as usize;
     }
     count
@@ -458,6 +512,7 @@ struct PefCursor<'a> {
     layout: Layout<'a>,
     partition_index: usize,
     partition: Option<Partition<'a>>,
+    upper_high_position: usize,
     position: Option<Position>,
     current: Option<u32>,
 }
@@ -468,16 +523,49 @@ impl<'a> PefCursor<'a> {
             layout: Layout::new(universe, n, buf),
             partition_index: usize::MAX,
             partition: None,
+            upper_high_position: 0,
             position: None,
             current: None,
         }
     }
 
     fn load_partition(&mut self, partition_index: usize) {
+        let upper_highs = &self.layout.buf[self.layout.upper_high_start..self.layout.type_start];
+        self.upper_high_position = select_one(upper_highs, self.layout.upper_high_bits, partition_index).unwrap_or(0);
+        self.load_partition_at(partition_index);
+    }
+
+    fn load_partition_at(&mut self, partition_index: usize) {
         self.partition_index = partition_index;
         self.partition = Some(self.layout.partition(partition_index));
         self.position = None;
         self.current = None;
+    }
+
+    fn partition_for_target(&mut self, target: u32) -> Option<usize> {
+        if self.partition_index == usize::MAX {
+            let partition_index = self.layout.lower_bound_partition(target, 0)?;
+            self.load_partition(partition_index);
+            return Some(partition_index);
+        }
+        let partition = self.partition.as_ref()?;
+        if partition.start + partition.universe as u64 > u64::from(target) {
+            return Some(self.partition_index);
+        }
+
+        let upper_highs = &self.layout.buf[self.layout.upper_high_start..self.layout.type_start];
+        let mut partition_index = self.partition_index;
+        let mut high_position = self.upper_high_position;
+        while partition_index + 1 < self.layout.partition_count {
+            partition_index += 1;
+            high_position = find_next_one(upper_highs, self.layout.upper_high_bits, high_position + 1)?;
+            if self.layout.upper_bound_at(partition_index, high_position) >= target {
+                self.upper_high_position = high_position;
+                self.load_partition_at(partition_index);
+                return Some(partition_index);
+            }
+        }
+        None
     }
 
     fn set_position(&mut self, position: Position) -> Option<u32> {
@@ -506,13 +594,9 @@ impl Cursor for PefCursor<'_> {
             return None;
         }
 
-        let from_partition = if self.partition_index == usize::MAX { 0 } else { self.partition_index };
-        let Some(partition_index) = self.layout.lower_bound_partition(target, from_partition) else {
+        let Some(partition_index) = self.partition_for_target(target) else {
             return self.exhaust();
         };
-        if partition_index != self.partition_index {
-            self.load_partition(partition_index);
-        }
         let partition = self.partition.as_ref()?;
         let local_target = u64::from(target).saturating_sub(partition.start) as usize;
         let from_index = self.position.as_ref().map_or(0, |position| position.index);
