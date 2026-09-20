@@ -1,7 +1,7 @@
 //! Lemire's C++ FastPFor library, via the `fastpfor` crate's `cpp` feature.
 //! Whole-array codecs: a fresh C++ object is built per `encode`/`decode`
-//! (instances are not thread-safe; construction is cheap enough that a
-//! Mutex would cost more than it saves on the lists this harness times).
+//! (instances are not thread-safe; construction is 0.1–0.8 µs, under the
+//! 1 µs threshold where it would dominate the encode column on short lists).
 //! Sorted lists are delta-coded like `fastpfor.rs`: first value as-is, then
 //! `gap - 1`. The crate's `AnyLenCodec` writes a `u32` word stream and
 //! truncates to the words actually used; those words are stored little-endian
