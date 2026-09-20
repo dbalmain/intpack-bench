@@ -31,6 +31,7 @@
 use crate::stream::Kind;
 
 pub mod bp128;
+pub mod bp128skip;
 pub mod eliasfano;
 pub mod fastpfor;
 pub mod raw;
@@ -143,6 +144,7 @@ pub fn all() -> Vec<Box<dyn Codec>> {
         Box::new(raw::Raw),
         Box::new(vbyte::VByte),
         Box::new(bp128::Bp128),
+        Box::new(bp128skip::Bp128Skip),
         Box::new(fastpfor::FastPFor),
         Box::new(streamvbyte::StreamVByte),
         Box::new(roaring::Roaring),
