@@ -22,7 +22,7 @@ use crate::stream::Kind;
 
 use bitpacking::{BitPacker, BitPacker4x};
 
-use super::bp128::{self, SortedTail, BLOCK_LEN};
+use super::bp128::{self, BLOCK_LEN, SortedTail};
 use super::vbyte;
 use super::{Caps, Codec, Cursor};
 
@@ -293,11 +293,7 @@ impl Cursor for Bp128SkipCursor<'_> {
             if self.block_num != lo {
                 self.load_block(lo);
             }
-            let from = if lo == cur_block && self.idx != usize::MAX {
-                self.idx % BLOCK_LEN
-            } else {
-                0
-            };
+            let from = if lo == cur_block && self.idx != usize::MAX { self.idx % BLOCK_LEN } else { 0 };
             for j in from..BLOCK_LEN {
                 if self.block[j] >= target {
                     self.idx = lo * BLOCK_LEN + j;

@@ -109,7 +109,8 @@ three `words.*` datasets stay aligned list-for-list.
 (control), `vbyte` (delta varint, linear-scan cursor — the baseline a skip
 structure must beat by more than it costs). Under test: `bp128`
 (SIMD bit-packing, 128-int blocks, varint tail — the Lucene/Tantivy shape),
-`fastpfor128`, `streamvbyte`, `roaring`, `elias-fano`.
+`bp128-skip` (the same with a skip table), `fastpfor128`, `streamvbyte`,
+`roaring`, `elias-fano`.
 
 Each adapter is the crate's own on-disk format, fixed costs included, because
 that is what you would pay by adopting it. The fixed costs matter on the
@@ -118,6 +119,7 @@ Zipfian datasets, where most lists are one to three ints:
 | codec | per-list overhead beyond the payload |
 |---|---|
 | `bp128` | 1 byte num_bits per full 128-block; tail is `vbyte` |
+| `bp128-skip` | `bp128` plus 8 bytes of skip table per full 128-block (reported as `aux`) |
 | `fastpfor128` | 4-byte block-count word the crate always writes |
 | `streamvbyte` | lists padded to a multiple of 4 (one tag byte per group) |
 | `roaring` | 8-byte portable header + 8 bytes per container |
