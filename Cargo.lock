@@ -314,6 +314,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "intpack"
+version = "0.1.0"
+
+[[package]]
 name = "intpack-bench"
 version = "0.1.0"
 dependencies = [
@@ -321,6 +325,7 @@ dependencies = [
  "bitpacking",
  "clap",
  "fastpfor",
+ "intpack",
  "perf-event",
  "rand",
  "rand_distr",
