@@ -30,7 +30,12 @@
 
 use crate::stream::Kind;
 
+pub mod bp128;
+pub mod eliasfano;
+pub mod fastpfor;
 pub mod raw;
+pub mod roaring;
+pub mod streamvbyte;
 pub mod vbyte;
 
 /// What a codec can do natively; drives which benchmarks run against it.
@@ -134,7 +139,15 @@ pub fn prepare<'a>(codec: &'a dyn Codec, kind: Kind, universe: u32, n: usize, bu
 
 /// Every codec the harness knows, in report order. Reference codecs first.
 pub fn all() -> Vec<Box<dyn Codec>> {
-    vec![Box::new(raw::Raw), Box::new(vbyte::VByte)]
+    vec![
+        Box::new(raw::Raw),
+        Box::new(vbyte::VByte),
+        Box::new(bp128::Bp128),
+        Box::new(fastpfor::FastPFor),
+        Box::new(streamvbyte::StreamVByte),
+        Box::new(roaring::Roaring),
+        Box::new(eliasfano::EliasFanoCodec),
+    ]
 }
 
 pub fn by_name(name: &str) -> Option<Box<dyn Codec>> {
