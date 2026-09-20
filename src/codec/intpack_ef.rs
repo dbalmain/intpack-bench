@@ -29,8 +29,9 @@ impl Codec for IntpackEf {
         elias_fano::decode(universe, n, buf, out);
     }
 
-    fn aux_bytes(&self, n: usize, _buf: &[u8]) -> Option<usize> {
-        Some(elias_fano::aux_len(0, n))
+    fn aux_bytes(&self, n: usize, buf: &[u8]) -> Option<usize> {
+        let _ = n;
+        Some(elias_fano::aux_bytes(buf))
     }
 
     fn cursor<'a>(&self, universe: u32, n: usize, buf: &'a [u8]) -> Option<Box<dyn Cursor + 'a>> {
@@ -66,7 +67,7 @@ mod tests {
 
 #[cfg(test)]
 mod ip_repro {
-    use crate::codec::{self, Codec as _, Codec, Prepared};
+    use crate::codec::{self, Codec as _, Prepared};
     use crate::stream::Kind;
 
     fn naive_count(a: &[u32], b: &[u32]) -> usize {
@@ -104,29 +105,46 @@ mod ip_repro {
         count
     }
 
+    /// Encode several dense Bernoulli lists into one arena and leapfrog
+    /// every pair — exercises both the arena-append path and next_geq on
+    /// running cursors (the bench's intersect correctness check).
     #[test]
-    fn repro_uniform_lists() {
-        let ds = crate::stream::Dataset::read(std::path::Path::new("data/synthetic/uniform-d0.1.ipb")).expect("read dataset");
-        let universe = ds.meta.universe;
+    fn leapfrog_matches_naive_on_dense_lists() {
+        let universe = 1 << 20;
         let codec = &super::IntpackEf;
         let mut arena = Vec::new();
         let mut spans = Vec::new();
-        for list in &ds.lists {
+        let mut lists = Vec::new();
+        let mut state = 0x1234_5678_9abc_def0u64;
+        for round in 0..8 {
+            let mut list = Vec::new();
+            for v in 0..universe {
+                state ^= state << 7;
+                state ^= state >> 9;
+                state ^= state << 8;
+                if state.is_multiple_of(10) && (state >> 32).is_multiple_of(round + 3) {
+                    list.push(v);
+                }
+            }
             let start = arena.len();
-            codec.encode(Kind::Sorted, universe, list, &mut arena);
+            codec.encode(Kind::Sorted, universe, &list, &mut arena);
             spans.push((start, arena.len() - start));
+            lists.push(list);
         }
-        let prepared: Vec<Box<dyn Prepared>> = ds
-            .lists
+        let prepared: Vec<Box<dyn Prepared>> = lists
             .iter()
             .zip(&spans)
             .map(|(l, &(o, n))| codec::prepare(codec, Kind::Sorted, universe, l.len(), &arena[o..o + n]))
             .collect();
-        for &(s, l) in &[(5usize, 17usize), (0, 20), (3, 12), (10, 30)] {
-            let got = leapfrog(prepared[s].as_ref(), prepared[l].as_ref());
-            let want = naive_count(&ds.lists[s], &ds.lists[l]);
-            eprintln!("lists {s}x{l}: got {got} vs naive {want}");
-            assert_eq!(got, want, "lists {s}x{l}: {got} vs naive {want}");
+        for s in 0..lists.len() {
+            for l in 0..lists.len() {
+                if s == l {
+                    continue;
+                }
+                let got = leapfrog(prepared[s].as_ref(), prepared[l].as_ref());
+                let want = naive_count(&lists[s], &lists[l]);
+                assert_eq!(got, want, "lists {s}x{l}: {got} vs naive {want}");
+            }
         }
     }
 }
