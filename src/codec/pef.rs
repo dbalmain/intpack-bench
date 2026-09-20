@@ -46,11 +46,12 @@ impl Codec for Pef {
             let hi = u64::from(partition[partition.len() - 1]);
             let local_universe = hi + 1 - start;
             let ef_l = low_width(local_universe, partition.len());
-            let bitmap_bits = local_universe;
-            let ef_bits = partition.len() as u64 * u64::from(ef_l) + partition.len() as u64 + (local_universe >> ef_l);
+            let bitmap_bytes = (local_universe as usize).div_ceil(8);
+            let ef_bytes = (partition.len() * usize::from(ef_l)).div_ceil(8)
+                + (partition.len() + (local_universe >> ef_l) as usize).div_ceil(8);
             let partition_type = if local_universe == partition.len() as u64 {
                 TYPE_ALL_ONES
-            } else if bitmap_bits <= ef_bits {
+            } else if bitmap_bytes <= ef_bytes {
                 TYPE_BITMAP
             } else {
                 TYPE_ELIAS_FANO
