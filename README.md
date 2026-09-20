@@ -125,11 +125,8 @@ Zipfian datasets, where most lists are one to three ints:
 | `streamvbyte` | lists padded to a multiple of 4 (one tag byte per group) |
 | `roaring` | 8-byte portable header + 8 bytes per container |
 | `elias-fano` | `sucds` select indices, ~130 bytes even for an empty list; the `aux` column reports them |
-| `cpp-simdfastpfor128` | 4-byte header word (same as `fastpfor128`) |
-| `cpp-simdbinarypacking` | 4-byte header word |
-| `cpp-optpfor` | 4-byte header word |
-| `cpp-simdpfor` | 4-byte header word |
-| `cpp-bp32` | 4-byte header word |
+| `pef` | 2 header bytes, then per 128-partition: an upper-level EF entry, a 2-bit type tag and a payload offset |
+| `cpp-*` | 4-byte header word (same as `fastpfor128`); plus ~0.1–0.8 µs per call to construct the C++ codec object, which dominates on short lists |
 
 ### C++ competitors
 
