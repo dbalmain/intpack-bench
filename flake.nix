@@ -7,6 +7,18 @@
     let
       systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       forAll = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      # fastpfor's build.rs looks in $OUT_DIR/lib, but GNUInstallDirs on
+      # NixOS/Fedora installs the static lib to lib64. Inject libdir=lib on
+      # cmake *configure* only (`--build` / `--install` must stay untouched).
+      cmakeForCargo = pkgs: pkgs.writeShellScriptBin "cmake" ''
+        set -euo pipefail
+        case "''${1:-}" in
+          --build|--install|-E|-P|--find-package|--list-presets|--help|-help|--version|-version)
+            exec ${pkgs.cmake}/bin/cmake "$@"
+            ;;
+        esac
+        exec ${pkgs.cmake}/bin/cmake -DCMAKE_INSTALL_LIBDIR=lib "$@"
+      '';
     in {
       packages = forAll (pkgs:
         let
@@ -21,10 +33,13 @@
             doCheck = false;
             buildFeatures = features;
             # cmake is only required for `--features cpp` (the `fastpfor` crate's
-            # build.rs). The setup hook would otherwise try to cmake-configure
-            # this Cargo project.
-            nativeBuildInputs = [ pkgs.cmake pkgs.stdenv.cc ];
+            # build.rs). The wrapper is not the cmake setup hook, so it will not
+            # try to cmake-configure this Cargo project.
+            nativeBuildInputs = [ (cmakeForCargo pkgs) pkgs.stdenv.cc ];
             dontUseCmakeConfigure = true;
+            # The gcc wrapper drops `-march=native` unless this is 0. FastPFor's
+            # `cpp_native` feature relies on that flag for SSSE3/SSE4.2.
+            NIX_ENFORCE_NO_NATIVE = "0";
           };
         in rec {
           intpack-bench = mk { features = []; };
@@ -59,8 +74,10 @@
       devShells = forAll (pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [ cargo rustc clippy rustfmt rust-analyzer util-linux ];
-          nativeBuildInputs = with pkgs; [ cmake stdenv.cc ];
+          nativeBuildInputs = [ (cmakeForCargo pkgs) pkgs.stdenv.cc ];
           RUSTFLAGS = "-C target-cpu=native";
+          # See packages: FastPFor's cmake `-march=native` must survive the wrapper.
+          NIX_ENFORCE_NO_NATIVE = "0";
         };
       });
     };

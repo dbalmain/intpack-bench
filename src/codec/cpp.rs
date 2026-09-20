@@ -1,6 +1,7 @@
 //! Lemire's C++ FastPFor library, via the `fastpfor` crate's `cpp` feature.
 //! Whole-array codecs: a fresh C++ object is built per `encode`/`decode`
-//! (instances are not thread-safe; construction is cheap — see `.ai/DONE.md`).
+//! (instances are not thread-safe; construction is cheap enough that a
+//! Mutex would cost more than it saves on the lists this harness times).
 //! Sorted lists are delta-coded like `fastpfor.rs`: first value as-is, then
 //! `gap - 1`. The crate's `AnyLenCodec` writes a `u32` word stream and
 //! truncates to the words actually used; those words are stored little-endian
@@ -205,11 +206,25 @@ mod tests {
         cpp.decode(Kind::Sorted, universe, list.len(), &cpp_buf, &mut cpp_back);
         assert_eq!(rust_back, list);
         assert_eq!(cpp_back, list);
-        eprintln!(
-            "fastpfor128 {} bytes, cpp-simdfastpfor128 {} bytes, bytes_eq={}",
-            rust_buf.len(),
-            cpp_buf.len(),
-            rust_buf == cpp_buf
-        );
+        // Same wire format on this list (2684 bytes each); the harness does not
+        // require that, but a sudden split would be worth noticing.
+        assert_eq!(rust_buf, cpp_buf);
+        assert_eq!(rust_buf.len(), 2684);
+    }
+
+    #[test]
+    fn empty_list_is_one_header_word() {
+        let codecs: [&dyn Codec; 5] = [
+            &super::CppSimdFastPFor128,
+            &super::CppSimdBinaryPacking,
+            &super::CppOptPFor,
+            &super::CppSimdPFor,
+            &super::CppBP32,
+        ];
+        for c in codecs {
+            let mut buf = Vec::new();
+            c.encode(Kind::Sorted, 1, &[], &mut buf);
+            assert_eq!(buf.len(), 4, "{}", c.name());
+        }
     }
 }
