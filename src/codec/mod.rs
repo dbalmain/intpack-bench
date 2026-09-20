@@ -31,6 +31,8 @@
 use crate::stream::Kind;
 
 pub mod bp128;
+#[cfg(feature = "cpp")]
+pub mod cpp;
 pub mod eliasfano;
 pub mod fastpfor;
 pub mod raw;
@@ -147,6 +149,16 @@ pub fn all() -> Vec<Box<dyn Codec>> {
         Box::new(streamvbyte::StreamVByte),
         Box::new(roaring::Roaring),
         Box::new(eliasfano::EliasFanoCodec),
+        #[cfg(feature = "cpp")]
+        Box::new(cpp::CppSimdFastPFor128),
+        #[cfg(feature = "cpp")]
+        Box::new(cpp::CppSimdBinaryPacking),
+        #[cfg(feature = "cpp")]
+        Box::new(cpp::CppOptPFor),
+        #[cfg(feature = "cpp")]
+        Box::new(cpp::CppSimdPFor),
+        #[cfg(feature = "cpp")]
+        Box::new(cpp::CppBP32),
     ]
 }
 
