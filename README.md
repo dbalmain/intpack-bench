@@ -110,7 +110,8 @@ three `words.*` datasets stay aligned list-for-list.
 structure must beat by more than it costs). Under test: `bp128`
 (SIMD bit-packing, 128-int blocks, varint tail — the Lucene/Tantivy shape),
 `bp128-skip` (the same with a skip table), `fastpfor128`, `streamvbyte`,
-`roaring`, `elias-fano`.
+`roaring`, `elias-fano`, `pef` (fixed-128 partitioned Elias-Fano with
+per-partition all-ones/bitmap/EF selection).
 
 Each adapter is the crate's own on-disk format, fixed costs included, because
 that is what you would pay by adopting it. The fixed costs matter on the
