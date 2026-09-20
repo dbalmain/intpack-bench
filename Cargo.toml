@@ -26,6 +26,8 @@ perf-event = { version = "0.4", optional = true }
 [features]
 default = ["perf"]
 perf = ["dep:perf-event"]
+# Lemire's C++ FastPFor via the `fastpfor` crate. Off by default: needs cmake + C++14.
+cpp = ["fastpfor/cpp_native"]
 
 [profile.release]
 debug = 1

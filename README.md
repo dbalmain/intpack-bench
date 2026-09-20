@@ -125,6 +125,27 @@ Zipfian datasets, where most lists are one to three ints:
 | `streamvbyte` | lists padded to a multiple of 4 (one tag byte per group) |
 | `roaring` | 8-byte portable header + 8 bytes per container |
 | `elias-fano` | `sucds` select indices, ~130 bytes even for an empty list; the `aux` column reports them |
+| `cpp-simdfastpfor128` | 4-byte header word (same as `fastpfor128`) |
+| `cpp-simdbinarypacking` | 4-byte header word |
+| `cpp-optpfor` | 4-byte header word |
+| `cpp-simdpfor` | 4-byte header word |
+| `cpp-bp32` | 4-byte header word |
+
+### C++ competitors
+
+Lemire's C++ FastPFor, via the same `fastpfor` crate, behind `--features cpp`
+(off by default; needs cmake and a C++14 compiler). The default build is unchanged.
+
+```sh
+cargo build --release --features cpp
+nix develop -c cargo build --release --features cpp
+```
+
+`packages.cpp` / `nix run .#cpp` is that binary. Wrappers: `cpp-simdfastpfor128`,
+`cpp-simdbinarypacking`, `cpp-optpfor`, `cpp-simdpfor`, `cpp-bp32`. C++ codec
+objects are not thread-safe; each `encode`/`decode` constructs a fresh one
+(~0.1–0.8 µs). Sorted lists use the same first-value-as-is then `gap - 1` as
+`fastpfor128`. Whole-array only — no cursor or `get`.
 
 ### Adding one
 
