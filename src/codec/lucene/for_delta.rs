@@ -2,11 +2,14 @@
 //! prefix sum. Primitive-width thresholds (8 at bpv ≤ 3, 16 at ≤ 10, else 32)
 //! differ from [`super::for_util`] because the prefix sum is done in SIMD-like
 //! packed lanes and must not overflow a lane.
+#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
+#![allow(clippy::needless_range_loop)] // fixed-index packed-lane loops, for LLVM
+#![allow(clippy::explicit_counter_loop)]
 
 use super::for_util::{
     self, BLOCK_SIZE, MASK16_1, MASK16_2, MASK16_4, MASK16_5, MASK16_6, MASK16_7, MASK16_8, MASK32_1, MASK32_2,
     MASK32_3, MASK32_4, MASK32_5, MASK32_6, MASK32_7, MASK32_8, MASK32_9, MASK32_10, MASK32_11, MASK32_12, MASK32_13,
-    MASK32_14, MASK32_15, MASK32_16, decode1, decode2, decode3, decode9, decode10, decode_slow, expand8, expand16,
+    MASK32_14, MASK32_15, MASK32_16, decode_slow, decode1, decode2, decode3, decode9, decode10, expand8, expand16,
     split_ints, split_ints_tmp,
 };
 use super::io::Reader;

@@ -1,5 +1,6 @@
 //! Lucene `DataInput` / `DataOutput` primitives used by the 10.3.1 postings
 //! format: little-endian int/long, vint/vlong, vint15/vlong15, group-varint.
+#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
 
 /// Cursor over a byte slice. Short reads yield zero and pin `pos` at the end
 /// rather than panic: callers pass well-formed Lucene blocks.
@@ -88,21 +89,13 @@ impl<'a> Reader<'a> {
     /// Little-endian `short`; top bit set means a vint of the rest follows.
     pub fn read_vint15(&mut self) -> u32 {
         let s = self.read_u16_le();
-        if s < 0x8000 {
-            u32::from(s)
-        } else {
-            u32::from(s & 0x7fff) | (self.read_vint() << 15)
-        }
+        if s < 0x8000 { u32::from(s) } else { u32::from(s & 0x7fff) | (self.read_vint() << 15) }
     }
 
     /// Little-endian `short`; top bit set means a vlong of the rest follows.
     pub fn read_vlong15(&mut self) -> u64 {
         let s = self.read_u16_le();
-        if s < 0x8000 {
-            u64::from(s)
-        } else {
-            u64::from(s & 0x7fff) | (self.read_vlong() << 15)
-        }
+        if s < 0x8000 { u64::from(s) } else { u64::from(s & 0x7fff) | (self.read_vlong() << 15) }
     }
 
     /// Groups of 4: one flag byte of four 2-bit `bytes−1` widths, then the
@@ -220,6 +213,17 @@ mod tests {
     }
 
     #[test]
+    fn le_int_long_roundtrip() {
+        let mut buf = Vec::new();
+        write_u32_le(&mut buf, 0x0102_0304);
+        write_u64_le(&mut buf, 0x0807_0605_0403_0201);
+        let mut r = Reader::new(&buf);
+        assert_eq!(r.read_u32_le(), 0x0102_0304);
+        assert_eq!(r.read_u64_le(), 0x0807_0605_0403_0201);
+        assert_eq!(r.pos, buf.len());
+    }
+
+    #[test]
     fn vint_boundaries() {
         for v in [0, 127, 128, 16383, 16384, u32::MAX] {
             roundtrip_vint(v);
@@ -253,17 +257,7 @@ mod tests {
 
     #[test]
     fn group_vint_lengths_0_to_9() {
-        let samples: &[u32] = &[
-            0,
-            0x7f,
-            0xff,
-            0x100,
-            0xffff,
-            0x1_0000,
-            0xff_ffff,
-            0x100_0000,
-            u32::MAX,
-        ];
+        let samples: &[u32] = &[0, 0x7f, 0xff, 0x100, 0xffff, 0x1_0000, 0xff_ffff, 0x100_0000, u32::MAX];
         for n in 0..=9 {
             let ints: Vec<u32> = samples.iter().copied().cycle().take(n).collect();
             let mut buf = Vec::new();

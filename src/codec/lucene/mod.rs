@@ -9,33 +9,34 @@
 //! but Lucene only stores non-negative values, so every `>>>` is `>>` on
 //! `u32`. Where Java would misbehave on values `>= 2^31` (signed compares in
 //! `PForUtil.encode`), this port uses the natural unsigned extension.
+//!
+//! Not yet in [`crate::codec::all`]; a later slice wraps these as a `Codec`.
+#![cfg_attr(not(test), allow(dead_code))]
 
 pub mod for_delta;
 pub mod for_util;
 pub mod io;
 pub mod pfor;
 
-pub use for_util::BLOCK_SIZE;
+pub const BLOCK_SIZE: usize = for_util::BLOCK_SIZE;
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::{BLOCK_SIZE, for_delta, for_util, pfor};
 
     const FIXTURES: &str = include_str!("lucene103-fixtures.tsv");
 
     fn parse_hex(s: &str) -> Vec<u8> {
-        assert!(s.len() % 2 == 0, "odd hex length");
-        (0..s.len())
-            .step_by(2)
-            .map(|i| u8::from_str_radix(&s[i..i + 2], 16).expect("hex"))
-            .collect()
+        assert!(s.len().is_multiple_of(2), "odd hex length");
+        (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap()).collect()
     }
 
     fn parse_u32s(s: &str) -> Vec<u32> {
         if s.is_empty() {
             return Vec::new();
         }
-        s.split(',').map(|t| t.parse::<u32>().expect("u32")).collect()
+        s.split(',').map(|t| t.parse::<u32>().unwrap()).collect()
     }
 
     fn as_block(v: &[u32]) -> [u32; BLOCK_SIZE] {
@@ -66,14 +67,14 @@ mod tests {
                 continue;
             }
             let mut cols = line.split('\t');
-            let kind = cols.next().expect("kind");
-            let bpv_s = cols.next().expect("bpv");
-            let ints_s = cols.next().expect("ints");
-            let hex_s = cols.next().expect("hex");
+            let kind = cols.next().unwrap();
+            let bpv_s = cols.next().unwrap();
+            let ints_s = cols.next().unwrap();
+            let hex_s = cols.next().unwrap();
             let bytes = parse_hex(hex_s);
             match kind {
                 "for" => {
-                    let bpv: u32 = bpv_s.parse().expect("bpv");
+                    let bpv: u32 = bpv_s.parse().unwrap();
                     let ints = as_block(&parse_u32s(ints_s));
                     let mut encoded = Vec::new();
                     for_util::encode(&ints, bpv, &mut encoded);
@@ -84,7 +85,7 @@ mod tests {
                     n_for += 1;
                 }
                 "fordelta" => {
-                    let bpv: u32 = bpv_s.parse().expect("bpv");
+                    let bpv: u32 = bpv_s.parse().unwrap();
                     let deltas = as_block(&parse_u32s(ints_s));
                     assert_eq!(for_delta::bits_required(&deltas), bpv, "line {}: bits_required", line_no + 1);
                     let mut encoded = Vec::new();
@@ -121,4 +122,3 @@ mod tests {
         assert_eq!((n_for, n_delta, n_pfor, n_docs), (64, 31, 28, 13));
     }
 }
-

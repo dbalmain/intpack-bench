@@ -4,6 +4,9 @@
 //! 32-bit. Decode goes through [`split_ints`] then a leftover stitch for bpv
 //! that do not divide the lane width. `decode(32, …)` is 128 raw little-endian
 //! ints — Java's `decodeSlow(32)` would index `MASKS32[32]`.
+#![cfg_attr(not(test), allow(dead_code))] // next slice's codec adapter
+#![allow(clippy::needless_range_loop)] // fixed-index packed-lane loops, for LLVM
+#![allow(clippy::explicit_counter_loop)]
 
 use super::io::{Reader, write_u32_le};
 
@@ -194,7 +197,7 @@ pub(super) fn encode_with_primitive(ints: &[u32; BLOCK_SIZE], bpv: u32, primitiv
             let mask2 = mask_for(primitive_size, remaining_bits_per_int - remaining_bits_per_value);
             tmp[tmp_idx] |= (ints[idx] & mask1) << (remaining_bits_per_int - remaining_bits_per_value);
             idx += 1;
-            remaining_bits_per_value = bpv - remaining_bits_per_int + remaining_bits_per_value;
+            remaining_bits_per_value += bpv - remaining_bits_per_int;
             tmp[tmp_idx] |= (ints[idx] >> remaining_bits_per_value) & mask2;
             tmp_idx += 1;
         }
@@ -607,12 +610,7 @@ fn decode16(input: &mut Reader<'_>, ints: &mut [u32; BLOCK_SIZE]) {
     }
 }
 
-pub(super) fn decode_slow(
-    bpv: u32,
-    input: &mut Reader<'_>,
-    tmp: &mut [u32; BLOCK_SIZE],
-    ints: &mut [u32; BLOCK_SIZE],
-) {
+pub(super) fn decode_slow(bpv: u32, input: &mut Reader<'_>, tmp: &mut [u32; BLOCK_SIZE], ints: &mut [u32; BLOCK_SIZE]) {
     let num_ints = (bpv as usize) << 2;
     let mask = MASKS32[bpv as usize];
     split_ints_tmp(input, num_ints, ints, 32 - bpv, 32, mask, tmp, u32::MAX);
