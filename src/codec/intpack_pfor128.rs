@@ -1,4 +1,4 @@
-//! `intpack`'s own `bp128` and `bp128skip`: the same 128-block, VByte-tail,
+//! `intpack`'s own `pfor128` and `pfor128skip`: the same 128-block, VByte-tail,
 //! and optional skip-table container as the `bitpacking`-crate rows (`bp128`,
 //! `bp128-skip`), extended with Lucene's at-most-seven patched exceptions per
 //! block. Blocks without exceptions remain byte-identical. Each adapter is a
@@ -6,7 +6,7 @@
 
 use crate::stream::Kind;
 
-use intpack::{bp128, bp128skip};
+use intpack::{pfor128, pfor128skip};
 
 use super::{Caps, Codec, Cursor};
 
@@ -23,11 +23,11 @@ impl<C: intpack::Cursor> Cursor for Adapt<C> {
     }
 }
 
-pub struct IpBp128;
+pub struct IpPfor128;
 
-impl Codec for IpBp128 {
+impl Codec for IpPfor128 {
     fn name(&self) -> &'static str {
-        "ip-bp128"
+        "ip-pfor128"
     }
 
     fn caps(&self) -> Caps {
@@ -36,28 +36,28 @@ impl Codec for IpBp128 {
 
     fn encode(&self, kind: Kind, _universe: u32, list: &[u32], out: &mut Vec<u8>) {
         match kind {
-            Kind::Sorted => bp128::encode_sorted(list, out),
-            Kind::Unsorted => bp128::encode(list, out),
+            Kind::Sorted => pfor128::encode_sorted(list, out),
+            Kind::Unsorted => pfor128::encode(list, out),
         }
     }
 
     fn decode(&self, kind: Kind, _universe: u32, n: usize, buf: &[u8], out: &mut Vec<u32>) {
         match kind {
-            Kind::Sorted => bp128::decode_sorted(n, buf, out),
-            Kind::Unsorted => bp128::decode(n, buf, out),
+            Kind::Sorted => pfor128::decode_sorted(n, buf, out),
+            Kind::Unsorted => pfor128::decode(n, buf, out),
         }
     }
 
     fn cursor<'a>(&self, _universe: u32, n: usize, buf: &'a [u8]) -> Option<Box<dyn Cursor + 'a>> {
-        Some(Box::new(Adapt(bp128::SortedCursor::new(n, buf))))
+        Some(Box::new(Adapt(pfor128::SortedCursor::new(n, buf))))
     }
 }
 
-pub struct IpBp128Skip;
+pub struct IpPfor128Skip;
 
-impl Codec for IpBp128Skip {
+impl Codec for IpPfor128Skip {
     fn name(&self) -> &'static str {
-        "ip-bp128-skip"
+        "ip-pfor128-skip"
     }
 
     fn caps(&self) -> Caps {
@@ -66,30 +66,30 @@ impl Codec for IpBp128Skip {
 
     fn encode(&self, kind: Kind, _universe: u32, list: &[u32], out: &mut Vec<u8>) {
         match kind {
-            Kind::Sorted => bp128skip::encode_sorted(list, out),
-            Kind::Unsorted => bp128skip::encode(list, out),
+            Kind::Sorted => pfor128skip::encode_sorted(list, out),
+            Kind::Unsorted => pfor128skip::encode(list, out),
         }
     }
 
     fn decode(&self, kind: Kind, _universe: u32, n: usize, buf: &[u8], out: &mut Vec<u32>) {
         match kind {
-            Kind::Sorted => bp128skip::decode_sorted(n, buf, out),
-            Kind::Unsorted => bp128skip::decode(n, buf, out),
+            Kind::Sorted => pfor128skip::decode_sorted(n, buf, out),
+            Kind::Unsorted => pfor128skip::decode(n, buf, out),
         }
     }
 
     fn aux_bytes(&self, _universe: u32, n: usize, _buf: &[u8]) -> Option<usize> {
-        Some(bp128skip::aux_len(n))
+        Some(pfor128skip::aux_len(n))
     }
 
     fn cursor<'a>(&self, _universe: u32, n: usize, buf: &'a [u8]) -> Option<Box<dyn Cursor + 'a>> {
-        Some(Box::new(Adapt(bp128skip::SortedCursor::new(n, buf))))
+        Some(Box::new(Adapt(pfor128skip::SortedCursor::new(n, buf))))
     }
 
     fn get(&self, kind: Kind, _universe: u32, n: usize, buf: &[u8], i: usize) -> Option<u32> {
         (i < n).then(|| match kind {
-            Kind::Sorted => bp128skip::get_sorted(n, buf, i),
-            Kind::Unsorted => bp128skip::get(n, buf, i),
+            Kind::Sorted => pfor128skip::get_sorted(n, buf, i),
+            Kind::Unsorted => pfor128skip::get(n, buf, i),
         })
     }
 }
@@ -100,8 +100,8 @@ mod tests {
 
     #[test]
     fn conformance() {
-        super::super::conformance(&IpBp128);
-        super::super::conformance(&IpBp128Skip);
+        super::super::conformance(&IpPfor128);
+        super::super::conformance(&IpPfor128Skip);
     }
 
     #[test]
@@ -109,8 +109,8 @@ mod tests {
         for kind in [Kind::Sorted, Kind::Unsorted] {
             for (universe, list) in super::super::conformance_cases(kind) {
                 for (ours, theirs) in [
-                    (&IpBp128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
-                    (&IpBp128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+                    (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+                    (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
                 ] {
                     let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
                     ours.encode(kind, universe, &list, &mut ours_buf);
@@ -131,8 +131,8 @@ mod tests {
     fn no_exception_blocks_match_crate_rows() {
         for (kind, list) in [(Kind::Sorted, (0..300).collect::<Vec<u32>>()), (Kind::Unsorted, vec![3; 300])] {
             for (ours, theirs) in [
-                (&IpBp128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
-                (&IpBp128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+                (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+                (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
             ] {
                 let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
                 ours.encode(kind, 1 << 20, &list, &mut ours_buf);
@@ -155,8 +155,8 @@ mod tests {
             })
             .collect();
         for (ours, theirs) in [
-            (&IpBp128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
-            (&IpBp128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+            (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+            (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
         ] {
             let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
             ours.encode(Kind::Sorted, 1 << 20, &list, &mut ours_buf);
