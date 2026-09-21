@@ -116,6 +116,10 @@ posting stream, two skip levels), `streamvbyte`,
 `roaring`, `elias-fano`, `pef` (fixed-128 partitioned Elias-Fano with
 per-partition all-ones/bitmap/EF selection).
 
+The `ip-bp128` / `ip-bp128-skip` rows use intpack's corresponding containers
+and add Lucene's at-most-seven patched exceptions per full block. Their
+no-exception blocks are byte-identical to the `bitpacking`-crate controls.
+
 Each adapter is the crate's own on-disk format, fixed costs included, because
 that is what you would pay by adopting it. The fixed costs matter on the
 Zipfian datasets, where most lists are one to three ints:
@@ -124,6 +128,7 @@ Zipfian datasets, where most lists are one to three ints:
 |---|---|
 | `bp128` | 1 byte num_bits per full 128-block; tail is `vbyte` |
 | `bp128-skip` | `bp128` plus 8 bytes of skip table per full 128-block (reported as `aux`) |
+| `ip-bp128` / `ip-bp128-skip` | 1-byte token plus 2 bytes per exception per full block; the skip variant also pays the same 8-byte table (reported as `aux`) |
 | `fastpfor128` | 4-byte block-count word the crate always writes |
 | `lucene-pfor` | none (`n` and universe out of band); tail is Lucene vint |
 | `lucene-docs` | skip prefix on every 128-block (`vlong` + `vint15` + `vlong15`) and a `vint`+`vlong` per 4096-doc group (reported as `aux`) |

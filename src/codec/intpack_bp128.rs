@@ -1,6 +1,8 @@
-//! `intpack`'s own `bp128` and `bp128skip`: the same container formats as
-//! the `bitpacking`-crate rows (`bp128`, `bp128-skip`), so the comparison is
-//! kernel against kernel. Each adapter is a thin call into the crate.
+//! `intpack`'s own `bp128` and `bp128skip`: the same 128-block, VByte-tail,
+//! and optional skip-table container as the `bitpacking`-crate rows (`bp128`,
+//! `bp128-skip`), extended with Lucene's at-most-seven patched exceptions per
+//! block. Blocks without exceptions remain byte-identical. Each adapter is a
+//! thin call into the crate.
 
 use crate::stream::Kind;
 
@@ -102,20 +104,49 @@ mod tests {
         super::super::conformance(&IpBp128Skip);
     }
 
-    /// The payloads match the `bitpacking`-crate rows byte for byte, so the
-    /// bench compares kernels, not formats.
     #[test]
-    fn byte_identical_to_crate_rows() {
-        let list: Vec<u32> = (0..1000u32).map(|i| i * i).collect();
-        for (kind, universe) in [(Kind::Sorted, 1 << 20), (Kind::Unsorted, 1 << 20)] {
-            let (mut ours, mut theirs) = (Vec::new(), Vec::new());
-            IpBp128.encode(kind, universe, &list, &mut ours);
-            super::super::bp128::Bp128.encode(kind, universe, &list, &mut theirs);
-            assert_eq!(ours, theirs, "bp128 {kind:?}");
-            let (mut ours, mut theirs) = (Vec::new(), Vec::new());
-            IpBp128Skip.encode(kind, universe, &list, &mut ours);
-            super::super::bp128skip::Bp128Skip.encode(kind, universe, &list, &mut theirs);
-            assert_eq!(ours, theirs, "bp128-skip {kind:?}");
+    fn never_longer_than_crate_rows_on_conformance_cases() {
+        for kind in [Kind::Sorted, Kind::Unsorted] {
+            for (universe, list) in super::super::conformance_cases(kind) {
+                for (ours, theirs) in [
+                    (&IpBp128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+                    (&IpBp128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+                ] {
+                    let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
+                    ours.encode(kind, universe, &list, &mut ours_buf);
+                    theirs.encode(kind, universe, &list, &mut theirs_buf);
+                    assert!(
+                        ours_buf.len() <= theirs_buf.len(),
+                        "{} longer than {} for {kind:?}, n={}",
+                        ours.name(),
+                        theirs.name(),
+                        list.len()
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn outlier_block_is_shorter_than_crate_rows() {
+        let mut gaps = [511u32; 128];
+        gaps[64] = 86_000;
+        let mut prev = u32::MAX;
+        let list: Vec<u32> = gaps
+            .into_iter()
+            .map(|gap| {
+                prev = prev.wrapping_add(gap).wrapping_add(1);
+                prev
+            })
+            .collect();
+        for (ours, theirs) in [
+            (&IpBp128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+            (&IpBp128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+        ] {
+            let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
+            ours.encode(Kind::Sorted, 1 << 20, &list, &mut ours_buf);
+            theirs.encode(Kind::Sorted, 1 << 20, &list, &mut theirs_buf);
+            assert!(ours_buf.len() < theirs_buf.len());
         }
     }
 }
