@@ -128,6 +128,21 @@ mod tests {
     }
 
     #[test]
+    fn no_exception_blocks_match_crate_rows() {
+        for (kind, list) in [(Kind::Sorted, (0..300).collect::<Vec<u32>>()), (Kind::Unsorted, vec![3; 300])] {
+            for (ours, theirs) in [
+                (&IpBp128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+                (&IpBp128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+            ] {
+                let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
+                ours.encode(kind, 1 << 20, &list, &mut ours_buf);
+                theirs.encode(kind, 1 << 20, &list, &mut theirs_buf);
+                assert_eq!(ours_buf, theirs_buf, "{} and {}", ours.name(), theirs.name());
+            }
+        }
+    }
+
+    #[test]
     fn outlier_block_is_shorter_than_crate_rows() {
         let mut gaps = [511u32; 128];
         gaps[64] = 86_000;
