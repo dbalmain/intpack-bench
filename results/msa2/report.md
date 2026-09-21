@@ -31,6 +31,8 @@ Sorted, 64 lists, 620111 ints, longest 20217, entropy bound 8.054 bits/int
 | cpp-optpfor | 0.52 | -7.54 | — | 76 | 917 | 996 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 1.52 | -6.54 | — | 518 | 994 | 1043 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 1.30 | -6.75 | — | 2016 | 930 | 1001 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 2.01 | -6.05 | — | 555 | 1241 | 1311 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 4.10 | -3.96 | 0.33 | 1293 | 971 | 998 | 14.9 | 0.7 | — | — | — | 384.1 | — | 0 | 0 | yes |
 
 Noisy (spread > 15% of median): ip-vbyte seek ±16%, roaring dec ±16%
 
@@ -61,6 +63,8 @@ Sorted, 64 lists, 648857 ints, longest 12279, entropy bound 8.052 bits/int
 | cpp-optpfor | 1.36 | -6.69 | — | 45 | 708 | 888 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 11.75 | +3.70 | — | 313 | 1006 | 1024 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 5.47 | -2.58 | — | 1002 | 672 | 901 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 5.36 | -2.69 | — | 289 | 1003 | 1024 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 11.44 | +3.39 | 0.32 | 668 | 923 | 972 | 14.4 | 2.9 | — | — | — | 403.5 | — | 0 | 0 | yes |
 
 ## clustered-d0.01-b8
 
@@ -89,6 +93,8 @@ Sorted, 64 lists, 641186 ints, longest 10834, entropy bound 8.075 bits/int
 | cpp-optpfor | 5.27 | -2.80 | — | 14 | 352 | 543 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 11.30 | +3.22 | — | 189 | 1014 | 1028 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 10.50 | +2.43 | — | 859 | 643 | 794 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 10.16 | +2.09 | — | 143 | 897 | 901 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 11.47 | +3.40 | 0.32 | 694 | 1109 | 1118 | 14.7 | 8.2 | — | — | — | 347.4 | — | 0 | 0 | yes |
 
 Noisy (spread > 15% of median): roaring dec ±21%
 
@@ -119,6 +125,8 @@ Sorted, 32 lists, 3228640 ints, longest 106950, entropy bound 4.676 bits/int
 | cpp-optpfor | 1.11 | -3.56 | — | 49 | 652 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 9.42 | +4.75 | — | 415 | 965 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 4.02 | -0.65 | — | 991 | 654 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 2.69 | -1.99 | — | 292 | 1081 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 7.20 | +2.53 | 0.32 | 654 | 680 | — | 15.3 | 3.4 | — | — | — | 514.9 | — | 0 | 0 | yes |
 
 ## docs.mtimes
 
@@ -147,6 +155,8 @@ Unsorted, 1 lists, 334524 ints, longest 334524, entropy bound 3.651 bits/int
 | cpp-optpfor | 27.79 | +24.14 | — | 8 | 360 | — | — | — | — | — | — | — | — | 1312 | 1132 | no |
 | cpp-simdpfor | 26.25 | +22.60 | — | 722 | 2457 | — | — | — | — | — | — | — | — | 1308 | 1068 | no |
 | cpp-bp32 | 24.85 | +21.20 | — | 751 | 1413 | — | — | — | — | — | — | — | — | 1308 | 1012 | no |
+| lucene-pfor | 24.67 | +21.02 | — | 339 | 699 | — | — | — | — | — | — | — | — | 1012 | 1312 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## docs.sizes
 
@@ -175,6 +185,8 @@ Unsorted, 1 lists, 334524 ints, longest 334524, entropy bound 13.028 bits/int
 | cpp-optpfor | 14.33 | +1.31 | — | 6 | 506 | — | — | — | — | — | — | — | — | 1308 | 584 | no |
 | cpp-simdpfor | 16.99 | +3.96 | — | 627 | 2092 | — | — | — | — | — | — | — | — | 748 | 668 | no |
 | cpp-bp32 | 15.30 | +2.28 | — | 828 | 1130 | — | — | — | — | — | — | — | — | 1308 | 620 | no |
+| lucene-pfor | 14.90 | +1.87 | — | 125 | 1400 | — | — | — | — | — | — | — | — | 608 | 1316 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## geometric-p0.1
 
@@ -203,6 +215,8 @@ Unsorted, 64 lists, 6400000 ints, longest 100000, entropy bound 4.689 bits/int
 | cpp-optpfor | 5.56 | +0.87 | — | 16 | 934 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 6.29 | +1.61 | — | 699 | 5250 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 6.00 | +1.31 | — | 1214 | 1504 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 5.67 | +0.98 | — | 138 | 2306 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## geometric-p0.5
 
@@ -231,6 +245,8 @@ Unsorted, 64 lists, 6400000 ints, longest 100000, entropy bound 1.999 bits/int
 | cpp-optpfor | 3.20 | +1.20 | — | 30 | 1024 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 4.05 | +2.05 | — | 550 | 4851 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 3.46 | +1.46 | — | 1474 | 1772 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 3.19 | +1.19 | — | 184 | 2578 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## periodic-s100-j0
 
@@ -259,6 +275,8 @@ Sorted, 64 lists, 640000 ints, longest 10000, entropy bound 8.079 bits/int
 | cpp-optpfor | 7.25 | -0.82 | — | 27 | 778 | 778 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 7.26 | -0.82 | — | 671 | 1052 | 1048 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 7.25 | -0.82 | — | 1313 | 805 | 805 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 0.23 | -7.85 | — | 840 | 1554 | 1548 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 7.39 | -0.69 | 0.32 | 929 | 1297 | 1292 | 14.4 | 9.8 | — | — | — | 313.7 | — | 0 | 0 | yes |
 
 ## periodic-s100-j10
 
@@ -287,6 +305,8 @@ Sorted, 64 lists, 639999 ints, longest 10001, entropy bound 8.079 bits/int
 | cpp-optpfor | 7.26 | -0.82 | — | 27 | 778 | 777 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 7.26 | -0.82 | — | 666 | 1048 | 1040 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 7.26 | -0.82 | — | 1307 | 803 | 806 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 7.06 | -1.01 | — | 157 | 1123 | 1126 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 7.39 | -0.69 | 0.32 | 929 | 1296 | 1296 | 14.6 | 17.6 | — | — | — | 312.4 | — | 0 | 0 | yes |
 
 Noisy (spread > 15% of median): ip-vbyte seek ±15%
 
@@ -317,6 +337,8 @@ Sorted, 32 lists, 3190538 ints, longest 104049, entropy bound 4.694 bits/int
 | cpp-optpfor | 0.96 | -3.74 | — | 51 | 751 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 9.42 | +4.73 | — | 392 | 977 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 5.56 | +0.87 | — | 964 | 652 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 2.28 | -2.41 | — | 320 | 1099 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 8.12 | +3.42 | 0.32 | 618 | 630 | — | 15.0 | 3.6 | — | — | — | 510.4 | — | 0 | 0 | yes |
 
 Noisy (spread > 15% of median): cpp-optpfor enc ±27%
 
@@ -347,6 +369,8 @@ Sorted, 8 lists, 3971614 ints, longest 506280, entropy bound 2.014 bits/int
 | cpp-optpfor | 0.37 | -1.64 | — | 80 | 912 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 1.44 | -0.58 | — | 928 | 954 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 1.17 | -0.84 | — | 1798 | 908 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 0.54 | -1.47 | — | 543 | 1327 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 1.88 | -0.14 | 0.32 | 1409 | 831 | — | 16.2 | 5.8 | — | — | — | 695.5 | — | 0 | 0 | yes |
 
 ## trigrams.docs
 
@@ -375,6 +399,8 @@ Sorted, 31323 lists, 18387319 ints, longest 253461, entropy bound 5.321 bits/int
 | cpp-optpfor | 5.20 | -0.12 | — | 17 | 345 | 530 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 7.82 | +2.49 | — | 233 | 702 | 1073 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 5.90 | +0.58 | — | 597 | 527 | 775 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 5.72 | +0.40 | — | 149 | 869 | 1074 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 6.42 | +1.10 | 0.31 | 470 | 642 | 951 | 15.6 | 11.5 | 17.1 | 30.9 | 59.6 | 439.2 | — | 0 | 0 | yes |
 
 Noisy (spread > 15% of median): ip-bp128 seek ±16%
 
@@ -405,6 +431,8 @@ Unsorted, 64 lists, 6400000 ints, longest 100000, entropy bound 11.970 bits/int
 | cpp-optpfor | 12.25 | +0.28 | — | 9 | 1873 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 12.25 | +0.28 | — | 522 | 4598 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 12.25 | +0.28 | — | 1256 | 2035 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 12.06 | +0.09 | — | 142 | 2160 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## uniform-bits-20
 
@@ -433,6 +461,8 @@ Unsorted, 64 lists, 6400000 ints, longest 100000, entropy bound 16.516 bits/int
 | cpp-optpfor | 20.25 | +3.74 | — | 7 | 1607 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 20.25 | +3.74 | — | 478 | 3678 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 20.25 | +3.74 | — | 847 | 1714 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 20.06 | +3.55 | — | 130 | 730 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## uniform-bits-4
 
@@ -461,6 +491,8 @@ Unsorted, 64 lists, 6400000 ints, longest 100000, entropy bound 4.000 bits/int
 | cpp-optpfor | 4.25 | +0.25 | — | 23 | 4241 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 4.25 | +0.25 | — | 550 | 6149 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 4.25 | +0.25 | — | 2106 | 4545 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 4.06 | +0.06 | — | 178 | 3273 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 ## uniform-d0.0001
 
@@ -489,6 +521,8 @@ Sorted, 64 lists, 6523 ints, longest 125, entropy bound 14.651 bits/int
 | cpp-optpfor | 17.82 | +3.17 | — | 230 | 231 | 275 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 17.82 | +3.17 | — | 280 | 301 | 368 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 17.82 | +3.17 | — | 320 | 317 | 372 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 17.38 | +2.73 | — | 547 | 550 | 576 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 17.81 | +3.15 | 0.00 | 152 | 322 | 380 | 14.6 | 10.5 | — | — | — | — | — | 0 | 0 | yes |
 
 ## uniform-d0.001
 
@@ -517,6 +551,8 @@ Sorted, 64 lists, 63755 ints, longest 1069, entropy bound 11.406 bits/int
 | cpp-optpfor | 12.48 | +1.08 | — | 8 | 492 | 562 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 13.09 | +1.69 | — | 440 | 821 | 887 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 12.92 | +1.51 | — | 792 | 632 | 726 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 12.55 | +1.15 | — | 159 | 921 | 993 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 13.59 | +2.19 | 0.35 | 458 | 853 | 908 | 14.7 | 18.4 | — | — | — | 269.5 | — | 0 | 0 | yes |
 
 ## uniform-d0.01
 
@@ -545,6 +581,8 @@ Sorted, 64 lists, 639614 ints, longest 10253, entropy bound 8.079 bits/int
 | cpp-optpfor | 8.92 | +0.84 | — | 10 | 548 | 673 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 9.45 | +1.37 | — | 525 | 1023 | 1030 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 9.35 | +1.28 | — | 1006 | 713 | 809 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 9.10 | +1.02 | — | 136 | 955 | 959 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 9.93 | +1.85 | 0.32 | 795 | 1107 | 1122 | 14.6 | 21.2 | — | — | — | 357.7 | — | 0 | 0 | yes |
 
 Noisy (spread > 15% of median): ip-pef open ±55%
 
@@ -575,6 +613,8 @@ Sorted, 32 lists, 3199450 ints, longest 100774, entropy bound 4.690 bits/int
 | cpp-optpfor | 5.47 | +0.78 | — | 16 | 553 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 6.29 | +1.60 | — | 467 | 1060 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 5.96 | +1.27 | — | 1014 | 696 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 5.67 | +0.98 | — | 137 | 1076 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 6.54 | +1.85 | 0.32 | 1036 | 1445 | — | 15.0 | 22.0 | — | — | — | 471.2 | — | 0 | 0 | yes |
 
 ## uniform-d0.5
 
@@ -603,6 +643,8 @@ Sorted, 8 lists, 4000553 ints, longest 501276, entropy bound 2.000 bits/int
 | cpp-optpfor | 2.79 | +0.79 | — | 29 | 498 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 3.50 | +1.50 | — | 516 | 979 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 3.24 | +1.24 | — | 1113 | 717 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 3.19 | +1.19 | — | 180 | 1118 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 2.62 | +0.62 | 0.32 | 629 | 687 | — | 15.0 | 18.3 | — | — | — | 693.6 | — | 0 | 0 | yes |
 
 ## words.docs
 
@@ -631,8 +673,10 @@ Sorted, 1442346 lists, 16641847 ints, longest 245421, entropy bound 9.090 bits/i
 | cpp-optpfor | 12.59 | +3.50 | — | 12 | 53 | 679 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 14.49 | +5.40 | — | 62 | 103 | 1074 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 13.15 | +4.06 | — | 81 | 117 | 816 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 9.41 | +0.32 | — | 131 | 327 | 1117 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 10.36 | +1.27 | 0.24 | 144 | 247 | 1012 | 35.8 | 6.3 | 25.7 | 45.8 | 57.2 | 484.3 | — | 0 | 564 | yes |
 
-Noisy (spread > 15% of median): raw-u32 open ±36%, vbyte open ±39%, ip-vbyte open ±43%, bp128 open ±35%, bp128-skip open ±40%, ip-bp128 open ±44%, ip-bp128-skip open ±49%, ip-ef open ±27%, pef open ±43%, ip-pef open ±41%
+Noisy (spread > 15% of median): raw-u32 open ±36%, vbyte open ±39%, ip-vbyte open ±43%, bp128 open ±35%, bp128-skip open ±40%, ip-bp128 open ±44%, ip-bp128-skip open ±49%, ip-ef open ±27%, pef open ±43%, ip-pef open ±41%, lucene-docs open ±40%
 
 ## words.freqs
 
@@ -661,6 +705,8 @@ Unsorted, 1442346 lists, 16641847 ints, longest 245421, entropy bound 1.520 bits
 | cpp-optpfor | 8.93 | +7.41 | — | 22 | 57 | 1280 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 10.17 | +8.64 | — | 69 | 116 | 6348 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 9.40 | +7.88 | — | 94 | 137 | 2320 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 4.54 | +3.02 | — | 188 | 560 | 2445 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 Noisy (spread > 15% of median): raw-u32 open ±47%, bp128-skip open ±42%, ip-bp128-skip open ±42%
 
@@ -691,6 +737,8 @@ Unsorted, 1442346 lists, 49933741 ints, longest 4422556, entropy bound 6.880 bit
 | cpp-optpfor | 10.86 | +3.98 | — | 10 | 122 | 618 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 13.01 | +6.13 | — | 156 | 263 | 5472 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 11.86 | +4.98 | — | 201 | 268 | 1581 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 10.23 | +3.35 | — | 137 | 607 | 1685 | — | — | — | — | — | — | — | 1724 | 33660 | yes |
+| lucene-docs | ✗ sorted-only codec |
 
 Noisy (spread > 15% of median): raw-u32 open ±45%, bp128-skip open ±44%, ip-bp128-skip open ±45%
 
@@ -721,6 +769,8 @@ Sorted, 20000 lists, 2096061 ints, longest 200000, entropy bound 10.445 bits/int
 | cpp-optpfor | 12.50 | +2.06 | — | 13 | 205 | 579 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 13.10 | +2.65 | — | 213 | 310 | 1074 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 12.83 | +2.39 | — | 275 | 289 | 783 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 12.20 | +1.76 | — | 141 | 401 | 1098 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 12.69 | +2.25 | 0.25 | 264 | 410 | 1293 | 15.9 | 9.5 | 24.7 | 114.1 | 149.1 | 332.3 | — | 0 | 0 | yes |
 
 ## zipf-dict-e1-b64
 
@@ -749,6 +799,8 @@ Sorted, 20000 lists, 2096061 ints, longest 200000, entropy bound 10.445 bits/int
 | cpp-optpfor | 6.80 | -3.65 | — | 33 | 221 | 841 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 13.08 | +2.64 | — | 204 | 335 | 1067 | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 9.18 | -1.27 | — | 307 | 318 | 845 | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 9.37 | -1.07 | — | 222 | 472 | 1045 | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | 12.39 | +1.95 | 0.24 | 254 | 413 | 988 | 15.8 | 5.8 | 8.8 | 44.2 | 68.5 | 373.5 | — | 0 | 0 | yes |
 
 ## zipf-values-n1024-e1.2
 
@@ -777,4 +829,6 @@ Unsorted, 64 lists, 6400000 ints, longest 100000, entropy bound 6.108 bits/int
 | cpp-optpfor | 7.71 | +1.61 | — | 9 | 419 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-simdpfor | 10.25 | +4.14 | — | 325 | 4742 | — | — | — | — | — | — | — | — | 0 | 0 | no |
 | cpp-bp32 | 9.95 | +3.85 | — | 1092 | 1555 | — | — | — | — | — | — | — | — | 0 | 0 | no |
+| lucene-pfor | 9.67 | +3.56 | — | 130 | 1700 | — | — | — | — | — | — | — | — | 0 | 0 | yes |
+| lucene-docs | ✗ sorted-only codec |
 

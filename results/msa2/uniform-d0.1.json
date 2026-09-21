@@ -1091,5 +1091,102 @@
     "encode_peak_kb": 0,
     "decode_peak_kb": 0,
     "longest_list": 100774
+  },
+  {
+    "dataset": "uniform-d0.1",
+    "kind": "sorted",
+    "codec": "lucene-pfor",
+    "lists": 32,
+    "ints": 3199450,
+    "error": null,
+    "streaming_encoder": true,
+    "bytes": 2265932,
+    "bits_per_int": 5.665803810029849,
+    "entropy_bits_per_int": 4.690110933832283,
+    "excess_bits_per_int": 0.9756928761975656,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 42,
+      "ns": 23371608.0,
+      "ns_spread": 0.008032181611124062,
+      "cycles": 58644916.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 2974195.0,
+      "ns_spread": 0.003981581570811598,
+      "cycles": 7455417.0
+    },
+    "decode_hot": null,
+    "decode_hot_ints": 0,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 100774
+  },
+  {
+    "dataset": "uniform-d0.1",
+    "kind": "sorted",
+    "codec": "lucene-docs",
+    "lists": 32,
+    "ints": 3199450,
+    "error": null,
+    "streaming_encoder": true,
+    "bytes": 2613978,
+    "bits_per_int": 6.536068386753973,
+    "entropy_bits_per_int": 4.690110933832283,
+    "excess_bits_per_int": 1.8459574529216898,
+    "aux_bits_per_int": 0.3219053274781603,
+    "encode": {
+      "runs": 100,
+      "ns": 3089583.0,
+      "ns_spread": 0.00586940049838441,
+      "cycles": 7737198.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 2214040.0,
+      "ns_spread": 0.0033712128055500353,
+      "cycles": 5549470.0
+    },
+    "decode_hot": null,
+    "decode_hot_ints": 0,
+    "open": {
+      "runs": 100,
+      "ns": 481.00000000000006,
+      "ns_spread": 0.020790020790020906,
+      "cycles": 1367.0
+    },
+    "intersect": [
+      {
+        "ratio": 1,
+        "pairs": 64,
+        "short_ints": 6397758,
+        "long_ints": 6397965,
+        "sample": {
+          "runs": 7,
+          "ns": 141061989.0,
+          "ns_spread": 0.00837042642295367,
+          "cycles": 353392068.0
+        }
+      }
+    ],
+    "seek": {
+      "runs": 100,
+      "ns": 9424976.0,
+      "ns_spread": 0.003148761333715863,
+      "cycles": 23591662.0
+    },
+    "seek_probes": 20000,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 0,
+    "longest_list": 100774
   }
 ]
