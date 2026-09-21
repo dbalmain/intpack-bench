@@ -4,13 +4,16 @@
 //! writes bpv 0 and a vint of the common (unpatched) value. Exceptions are
 //! `[index u8][high-byte]` pairs. Java's heap compares are signed; this port
 //! uses unsigned comparison, which agrees on the non-negative values Lucene
-//! stores and is the natural extension past `2^31`.
+//! stores. Token `0xff`, which Java cannot emit for non-negative `int`s, is a
+//! raw little-endian escape for blocks that need all 32 bits; this extends the
+//! format to arbitrary `u32` values without changing Lucene-compatible bytes.
 #![cfg_attr(not(test), allow(dead_code))] // skip() is for the Java surface; adapters use encode/decode
 
 use super::for_util::{self, BLOCK_SIZE, bits_required, num_bytes};
-use super::io::{Reader, write_vint};
+use super::io::{Reader, write_u32_le, write_vint};
 
 const MAX_EXCEPTIONS: usize = 7;
+const RAW_TOKEN: u8 = u8::MAX;
 
 pub fn encode(ints: &[u32; BLOCK_SIZE], out: &mut Vec<u8>) {
     let mut values = *ints;
@@ -46,6 +49,17 @@ pub fn encode(ints: &[u32; BLOCK_SIZE], out: &mut Vec<u8>) {
     }
     let num_exceptions = exceptions.len() / 2;
 
+    // The token only has five bits for bpv. Lucene values are signed-positive,
+    // so bpv 31 cannot have exceptions and 0xff is otherwise unreachable.
+    // Use it before casting bpv 32 or colliding with the escape at 7/31.
+    if patched_bits_required > 31 || (num_exceptions == MAX_EXCEPTIONS && patched_bits_required == 31) {
+        out.push(RAW_TOKEN);
+        for &v in ints {
+            write_u32_le(out, v);
+        }
+        return;
+    }
+
     if all_equal(&values) && max_bits_required <= 8 {
         for chunk in exceptions.chunks_exact_mut(2) {
             chunk[1] = (u32::from(chunk[1]) << patched_bits_required) as u8;
@@ -63,6 +77,12 @@ pub fn encode(ints: &[u32; BLOCK_SIZE], out: &mut Vec<u8>) {
 pub fn decode(input: &[u8], out: &mut [u32; BLOCK_SIZE]) -> usize {
     let mut r = Reader::new(input);
     let token = r.read_byte();
+    if token == RAW_TOKEN {
+        for slot in out {
+            *slot = r.read_u32_le();
+        }
+        return r.pos;
+    }
     let bpv = u32::from(token & 0x1f);
     let num_exceptions = usize::from(token >> 5);
     if bpv == 0 {
@@ -86,6 +106,9 @@ pub fn decode(input: &[u8], out: &mut [u32; BLOCK_SIZE]) -> usize {
 pub fn skip(input: &[u8]) -> usize {
     let mut r = Reader::new(input);
     let token = r.read_byte();
+    if token == RAW_TOKEN {
+        return r.pos + BLOCK_SIZE * size_of::<u32>();
+    }
     let bpv = u32::from(token & 0x1f);
     let num_exceptions = usize::from(token >> 5);
     if bpv == 0 {

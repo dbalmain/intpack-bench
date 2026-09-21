@@ -593,4 +593,57 @@ mod tests {
         assert_eq!(cur.next(), None);
         assert_eq!(cur.next_geq(past), None);
     }
+
+    fn encode(list: &[u32]) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let universe = list.last().copied().unwrap_or(0).saturating_add(1).max(1);
+        LuceneDocs.encode(Kind::Sorted, universe, list, &mut bytes);
+        bytes
+    }
+
+    #[test]
+    fn cursor_block_and_skip_boundaries() {
+        let list: Vec<u32> = (0..8_193).map(|i| i * 2 + 1).collect();
+        for n in [127, 128, 129, 4_096, 4_097] {
+            if let Err(e) = super::super::check(&LuceneDocs, Kind::Sorted, list[n] + 1, &list[..n]) {
+                panic!("n={n}: {e}");
+            }
+        }
+
+        let bytes = encode(&list);
+
+        // Odd doc IDs select the unary encoding. Target an absent even ID,
+        // then verify target <= current keeps the cursor on the same doc.
+        let mut cur = DocsCursor::new(list.len(), &bytes);
+        assert_eq!(cur.next_geq(2), Some(3));
+        assert_eq!(cur.next_geq(2), Some(3));
+        assert_eq!(cur.next(), Some(5));
+
+        // Land on opposite sides of the first 4,096-doc boundary directly,
+        // then cross that boundary through nextDoc from a separate cursor.
+        let mut cur = DocsCursor::new(list.len(), &bytes);
+        assert_eq!(cur.next_geq(list[4_096]), Some(list[4_096]));
+        assert_eq!(cur.decoded_blocks, 1);
+        let mut cur = DocsCursor::new(list.len(), &bytes);
+        assert_eq!(cur.next_geq(list[4_095]), Some(list[4_095]));
+        assert_eq!(cur.next(), Some(list[4_096]));
+
+        let exact_group = &list[..4_096];
+        let bytes = encode(exact_group);
+        let mut cur = DocsCursor::new(exact_group.len(), &bytes);
+        assert_eq!(cur.next_geq(exact_group[4_095]), Some(exact_group[4_095]));
+        assert_eq!(cur.next(), None);
+        assert_eq!(cur.next_geq(exact_group[4_095]), None);
+    }
+
+    #[test]
+    fn dense_group_aux_bytes_counts_only_skip_data() {
+        let list: Vec<u32> = (0..4_096).collect();
+        let bytes = encode(&list);
+
+        // Every full block has a one-byte numSkipBytes plus two two-byte
+        // vint15 fields. The level-1 header has two-byte vint/vlong fields.
+        assert_eq!(aux_bytes(list.len(), &bytes), 32 * 5 + 4);
+        assert_eq!(bytes.len(), 32 * 6 + 4);
+    }
 }

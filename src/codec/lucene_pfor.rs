@@ -3,7 +3,8 @@
 //! through [`super::lucene::pfor`]; the trailing `n % 128` values are plain
 //! Lucene vints. Sorted lists are delta-coded with `prev` starting at −1 so
 //! every delta is ≥ 1. No header, no skip data: `n` and `universe` arrive out
-//! of band.
+//! of band. Full blocks outside Lucene's signed-positive domain use the raw
+//! escape documented by [`super::lucene::pfor`].
 
 use crate::stream::Kind;
 
@@ -110,5 +111,28 @@ mod tests {
         let mut got = Vec::new();
         LucenePFor.encode(Kind::Sorted, 1 << 20, &list, &mut got);
         assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn full_block_round_trips_u32_values() {
+        let raw: Vec<u32> =
+            (0..BLOCK_SIZE).map(|i| if i.is_multiple_of(3) { u32::MAX - i as u32 } else { i as u32 }).collect();
+        let mut bytes = Vec::new();
+        LucenePFor.encode(Kind::Unsorted, u32::MAX, &raw, &mut bytes);
+        assert_eq!(bytes[0], u8::MAX);
+        assert_eq!(pfor::skip(&bytes), bytes.len());
+
+        let mut patched = vec![0; BLOCK_SIZE];
+        patched[57] = u32::MAX;
+        let mut bytes = Vec::new();
+        LucenePFor.encode(Kind::Unsorted, u32::MAX, &patched, &mut bytes);
+        assert_ne!(bytes[0], u8::MAX);
+        assert_eq!(pfor::skip(&bytes), bytes.len());
+
+        for list in [&raw, &patched] {
+            if let Err(e) = super::super::check(&LucenePFor, Kind::Unsorted, u32::MAX, list) {
+                panic!("{e}");
+            }
+        }
     }
 }

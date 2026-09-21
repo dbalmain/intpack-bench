@@ -8,7 +8,8 @@
 //! Values are `u32` and the arithmetic is unsigned. Java's `int` is signed
 //! but Lucene only stores non-negative values, so every `>>>` is `>>` on
 //! `u32`. Where Java would misbehave on values `>= 2^31` (signed compares in
-//! `PForUtil.encode`), this port uses the natural unsigned extension.
+//! `PForUtil.encode`), this port uses unsigned comparisons and a reserved raw
+//! block token for values that cannot fit Lucene's five-bit bpv field.
 
 pub mod for_delta;
 pub mod for_util;

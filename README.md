@@ -110,8 +110,9 @@ three `words.*` datasets stay aligned list-for-list.
 structure must beat by more than it costs). Under test: `bp128`
 (SIMD bit-packing, 128-int blocks, varint tail — the Lucene/Tantivy shape),
 `bp128-skip` (the same with a skip table), `fastpfor128`, `lucene-pfor`
-(Lucene 10.3.1 `PForUtil` 128-blocks + vint tail), `lucene-docs` (the
-docs-only `Lucene103` posting stream, two skip levels), `streamvbyte`,
+(Lucene 10.3.1 `PForUtil` 128-blocks + vint tail, with a raw escape outside
+Java's signed-positive domain), `lucene-docs` (the docs-only `Lucene103`
+posting stream, two skip levels), `streamvbyte`,
 `roaring`, `elias-fano`, `pef` (fixed-128 partitioned Elias-Fano with
 per-partition all-ones/bitmap/EF selection).
 
