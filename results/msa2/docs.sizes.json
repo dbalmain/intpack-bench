@@ -207,90 +207,6 @@
   {
     "dataset": "docs.sizes",
     "kind": "unsorted",
-    "codec": "ip-bp128",
-    "lists": 1,
-    "ints": 334524,
-    "error": null,
-    "streaming_encoder": true,
-    "bytes": 670660,
-    "bits_per_int": 16.03855029833435,
-    "entropy_bits_per_int": 13.027936952602737,
-    "excess_bits_per_int": 3.0106133457316133,
-    "aux_bits_per_int": null,
-    "encode": {
-      "runs": 100,
-      "ns": 81915.0,
-      "ns_spread": 0.014808032716840627,
-      "cycles": 205013.0
-    },
-    "decode_arena": {
-      "runs": 100,
-      "ns": 64120.0,
-      "ns_spread": 0.0334529008109793,
-      "cycles": 160577.0
-    },
-    "decode_hot": null,
-    "decode_hot_ints": 0,
-    "open": null,
-    "intersect": [],
-    "seek": null,
-    "seek_probes": 0,
-    "get": null,
-    "get_probes": 0,
-    "encode_peak_kb": 656,
-    "decode_peak_kb": 1308,
-    "longest_list": 334524
-  },
-  {
-    "dataset": "docs.sizes",
-    "kind": "unsorted",
-    "codec": "ip-bp128-skip",
-    "lists": 1,
-    "ints": 334524,
-    "error": null,
-    "streaming_encoder": true,
-    "bytes": 691564,
-    "bits_per_int": 16.53846061867011,
-    "entropy_bits_per_int": 13.027936952602737,
-    "excess_bits_per_int": 3.5105236660673746,
-    "aux_bits_per_int": 0.49991032033576066,
-    "encode": {
-      "runs": 100,
-      "ns": 83738.0,
-      "ns_spread": 0.015441018414578806,
-      "cycles": 209803.0
-    },
-    "decode_arena": {
-      "runs": 100,
-      "ns": 64190.99999999999,
-      "ns_spread": 0.025891480114034568,
-      "cycles": 160911.0
-    },
-    "decode_hot": null,
-    "decode_hot_ints": 0,
-    "open": {
-      "runs": 100,
-      "ns": 50.0,
-      "ns_spread": 0.0,
-      "cycles": 295.0
-    },
-    "intersect": [],
-    "seek": null,
-    "seek_probes": 0,
-    "get": {
-      "runs": 100,
-      "ns": 846327.0,
-      "ns_spread": 0.004120156866081314,
-      "cycles": 2110300.0
-    },
-    "get_probes": 20000,
-    "encode_peak_kb": 364,
-    "decode_peak_kb": 1312,
-    "longest_list": 334524
-  },
-  {
-    "dataset": "docs.sizes",
-    "kind": "unsorted",
     "codec": "fastpfor128",
     "lists": 1,
     "ints": 334524,
@@ -818,6 +734,90 @@
     "get_probes": 0,
     "encode_peak_kb": null,
     "decode_peak_kb": null,
+    "longest_list": 334524
+  },
+  {
+    "dataset": "docs.sizes",
+    "kind": "unsorted",
+    "codec": "ip-pfor128",
+    "lists": 1,
+    "ints": 334524,
+    "error": null,
+    "streaming_encoder": true,
+    "bytes": 622848,
+    "bits_per_int": 14.895146536571367,
+    "entropy_bits_per_int": 13.027936952602737,
+    "excess_bits_per_int": 1.8672095839686307,
+    "aux_bits_per_int": null,
+    "encode": {
+      "runs": 100,
+      "ns": 1396243.0,
+      "ns_spread": 0.019826778003542364,
+      "cycles": 3493104.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 67227.0,
+      "ns_spread": 0.04722804825442159,
+      "cycles": 169189.0
+    },
+    "decode_hot": null,
+    "decode_hot_ints": 0,
+    "open": null,
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": null,
+    "get_probes": 0,
+    "encode_peak_kb": 612,
+    "decode_peak_kb": 1312,
+    "longest_list": 334524
+  },
+  {
+    "dataset": "docs.sizes",
+    "kind": "unsorted",
+    "codec": "ip-pfor128-skip",
+    "lists": 1,
+    "ints": 334524,
+    "error": null,
+    "streaming_encoder": true,
+    "bytes": 643752,
+    "bits_per_int": 15.395056856907127,
+    "entropy_bits_per_int": 13.027936952602737,
+    "excess_bits_per_int": 2.3671199043043902,
+    "aux_bits_per_int": 0.49991032033576066,
+    "encode": {
+      "runs": 100,
+      "ns": 1358090.0,
+      "ns_spread": 0.016118224859913554,
+      "cycles": 3405962.0
+    },
+    "decode_arena": {
+      "runs": 100,
+      "ns": 70063.0,
+      "ns_spread": 0.024734881463825416,
+      "cycles": 175626.0
+    },
+    "decode_hot": null,
+    "decode_hot_ints": 0,
+    "open": {
+      "runs": 100,
+      "ns": 50.0,
+      "ns_spread": 0.0,
+      "cycles": 300.0
+    },
+    "intersect": [],
+    "seek": null,
+    "seek_probes": 0,
+    "get": {
+      "runs": 100,
+      "ns": 1064685.0,
+      "ns_spread": 0.023902844503303794,
+      "cycles": 2668583.0
+    },
+    "get_probes": 20000,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 1304,
     "longest_list": 334524
   }
 ]
