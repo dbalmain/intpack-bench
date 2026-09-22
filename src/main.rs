@@ -4,6 +4,10 @@
 mod bench;
 mod codec;
 mod extract;
+// Off by default: linking this module into the release bench changes ∩ timings
+// under thin LTO (measured: 115/88/56 became 89/106/56).
+#[cfg(feature = "ix-profile")]
+mod profile_ix;
 mod report;
 mod stream;
 mod synth;
@@ -69,6 +73,29 @@ enum Cmd {
         budget: f64,
         #[arg(long, default_value_t = 42)]
         seed: u64,
+    },
+    /// Scratch: block stats and phase times for one intersection ratio.
+    /// Not a supported mode.
+    #[cfg(feature = "ix-profile")]
+    Profile {
+        /// One `.ipb` file.
+        data: PathBuf,
+        /// Length ratio. Pair selection still draws 1, 10, 100, 1000 in order.
+        #[arg(long, default_value_t = 1000)]
+        ratio: u32,
+        /// Seconds of repetitions for the headline leapfrog timings.
+        #[arg(long, default_value_t = 1.0)]
+        budget: f64,
+        #[arg(long, default_value_t = 42)]
+        seed: u64,
+        /// If > 0, run only a tight leapfrog of `--codec` for this many seconds.
+        #[arg(long, default_value_t = 0.0)]
+        perf_secs: f64,
+        #[arg(long, default_value = "ip-pfor128-skip")]
+        codec: String,
+        /// `all`, `stats`, or `wall`.
+        #[arg(long, default_value = "all")]
+        only: String,
     },
     /// Render a markdown report from a results directory.
     Report {
@@ -147,6 +174,10 @@ fn main() -> Result<()> {
             let md = report::render(&machine, &load_records(&out)?);
             std::fs::write(out.join("report.md"), &md)?;
             eprintln!("wrote {}", out.join("report.md").display());
+        }
+        #[cfg(feature = "ix-profile")]
+        Cmd::Profile { data, ratio, budget, seed, perf_secs, codec, only } => {
+            profile_ix::run(&data, ratio, budget, seed, perf_secs, &codec, &only)?;
         }
         Cmd::Report { results, out } => {
             let machine: bench::Machine =
