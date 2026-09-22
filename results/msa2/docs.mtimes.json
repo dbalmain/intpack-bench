@@ -744,22 +744,22 @@
     "ints": 334524,
     "error": null,
     "streaming_encoder": true,
-    "bytes": 1031749,
-    "bits_per_int": 24.673841039805815,
+    "bytes": 14234,
+    "bits_per_int": 0.3404000908753931,
     "entropy_bits_per_int": 3.6511490995165015,
-    "excess_bits_per_int": 21.022691940289313,
+    "excess_bits_per_int": -3.310749008641108,
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 746499.0,
-      "ns_spread": 0.00860282465214287,
-      "cycles": 1861895.0
+      "ns": 758501.0,
+      "ns_spread": 0.007699396572977491,
+      "cycles": 1894596.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 58731.0,
-      "ns_spread": 0.01450681922664351,
-      "cycles": 147397.0
+      "ns": 47120.0,
+      "ns_spread": 0.011056876061120543,
+      "cycles": 119039.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
@@ -769,8 +769,8 @@
     "seek_probes": 0,
     "get": null,
     "get_probes": 0,
-    "encode_peak_kb": 1020,
-    "decode_peak_kb": 1308,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 1312,
     "longest_list": 334524
   },
   {
@@ -781,22 +781,22 @@
     "ints": 334524,
     "error": null,
     "streaming_encoder": true,
-    "bytes": 1052653,
-    "bits_per_int": 25.173751360141573,
+    "bytes": 35138,
+    "bits_per_int": 0.8403104112111538,
     "entropy_bits_per_int": 3.6511490995165015,
-    "excess_bits_per_int": 21.52260226062507,
+    "excess_bits_per_int": -2.8108386883053478,
     "aux_bits_per_int": 0.49991032033576066,
     "encode": {
       "runs": 100,
-      "ns": 790893.0,
-      "ns_spread": 0.01164253571595652,
-      "cycles": 1978571.0
+      "ns": 760565.0,
+      "ns_spread": 0.008128167875198043,
+      "cycles": 1900717.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 57759.0,
-      "ns_spread": 0.018733011305597395,
-      "cycles": 145432.0
+      "ns": 46548.0,
+      "ns_spread": 0.009044427257884334,
+      "cycles": 117463.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
@@ -811,13 +811,13 @@
     "seek_probes": 0,
     "get": {
       "runs": 100,
-      "ns": 702836.0,
-      "ns_spread": 0.009879971999157699,
-      "cycles": 1757261.0
+      "ns": 395601.0,
+      "ns_spread": 0.012206743663438666,
+      "cycles": 989038.0
     },
     "get_probes": 20000,
-    "encode_peak_kb": 724,
-    "decode_peak_kb": 1312,
+    "encode_peak_kb": 0,
+    "decode_peak_kb": 1036,
     "longest_list": 334524
   }
 ]

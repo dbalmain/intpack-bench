@@ -173,6 +173,11 @@ optional and must be native, not emulated by decoding everything. The
   index will actually run.
 * Every codec is round-trip checked on a sample of lists, and every
   intersection is checked against a naive merge, before anything is timed.
+* Cursor timings are sensitive to code layout: three release builds of the
+  same source (differing only in embedded paths and a block-alignment flag)
+  measured `ip-pfor128-skip` ∩ 1:1000 on `words.docs` at 54.8, 62.0 and
+  56.0 ns/e against `lucene-docs` at 55.3, 56.2 and 58.2. Compare cursors
+  within one run of one binary, and read differences under ~10% as layout.
 * Not yet measured: genuinely cold (page-cache-evicted) decode; encode
   under `nice`; multi-threaded anything. All deliberate for a first pass.
 
