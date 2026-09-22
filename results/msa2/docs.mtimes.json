@@ -687,15 +687,15 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 757899.0,
-      "ns_spread": 0.008883769473241158,
-      "cycles": 1894720.0
+      "ns": 798452.0,
+      "ns_spread": 0.009272943144985547,
+      "cycles": 1997744.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 46007.0,
-      "ns_spread": 0.016345338752798488,
-      "cycles": 116005.0
+      "ns": 46328.0,
+      "ns_spread": 0.01321015368675531,
+      "cycles": 116839.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
@@ -724,15 +724,15 @@
     "aux_bits_per_int": 0.49991032033576066,
     "encode": {
       "runs": 100,
-      "ns": 740707.0,
-      "ns_spread": 0.005438047703072875,
-      "cycles": 1855071.0
+      "ns": 746263.0,
+      "ns_spread": 0.04392821297585436,
+      "cycles": 1866535.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 46387.0,
-      "ns_spread": 0.013818526742406278,
-      "cycles": 116749.0
+      "ns": 46768.0,
+      "ns_spread": 0.011995381457406773,
+      "cycles": 117139.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
@@ -747,9 +747,9 @@
     "seek_probes": 0,
     "get": {
       "runs": 100,
-      "ns": 397610.0,
-      "ns_spread": 0.010661200674027314,
-      "cycles": 997661.0
+      "ns": 429093.0,
+      "ns_spread": 0.01800309023917892,
+      "cycles": 1069565.0
     },
     "get_probes": 20000,
     "encode_peak_kb": 0,
@@ -798,15 +798,15 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 100,
-      "ns": 963738.0,
-      "ns_spread": 0.029347187721144127,
-      "cycles": 2412743.0
+      "ns": 911055.0,
+      "ns_spread": 0.0233136309004396,
+      "cycles": 2268405.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 425342.0,
-      "ns_spread": 0.01088300708606251,
-      "cycles": 1066803.0
+      "ns": 424494.0,
+      "ns_spread": 0.011493684245242572,
+      "cycles": 1064702.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
