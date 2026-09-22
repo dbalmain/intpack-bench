@@ -686,16 +686,16 @@
     "excess_bits_per_int": 0.9826138306111041,
     "aux_bits_per_int": null,
     "encode": {
-      "runs": 34,
-      "ns": 28976606.0,
-      "ns_spread": 0.0029371969926360597,
-      "cycles": 72597251.0
+      "runs": 33,
+      "ns": 30241080.0,
+      "ns_spread": 0.003990532084171597,
+      "cycles": 75670002.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 1713655.0,
-      "ns_spread": 0.004420376330124791,
-      "cycles": 4293680.0
+      "ns": 1546517.0,
+      "ns_spread": 0.006867043815231258,
+      "cycles": 3869269.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
@@ -723,33 +723,33 @@
     "excess_bits_per_int": 1.482453830611104,
     "aux_bits_per_int": 0.49984,
     "encode": {
-      "runs": 33,
-      "ns": 30027675.0,
-      "ns_spread": 0.003011888199802349,
-      "cycles": 75210342.0
+      "runs": 34,
+      "ns": 29229181.0,
+      "ns_spread": 0.002520050082826474,
+      "cycles": 73181828.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 1714236.0,
-      "ns_spread": 0.005067563626011821,
-      "cycles": 4286482.0
+      "ns": 1545545.0,
+      "ns_spread": 0.005172932525419836,
+      "cycles": 3868452.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
     "open": {
       "runs": 100,
-      "ns": 971.0000000000001,
-      "ns_spread": 0.03089598352214212,
-      "cycles": 2604.0
+      "ns": 972.0,
+      "ns_spread": 0.01131687242798354,
+      "cycles": 2614.0
     },
     "intersect": [],
     "seek": null,
     "seek_probes": 0,
     "get": {
       "runs": 100,
-      "ns": 1327709.0,
-      "ns_spread": 0.01058665716659298,
-      "cycles": 3319337.0
+      "ns": 1193281.0,
+      "ns_spread": 0.015567163140953388,
+      "cycles": 2986540.0
     },
     "get_probes": 20000,
     "encode_peak_kb": 0,
@@ -798,15 +798,15 @@
     "aux_bits_per_int": null,
     "encode": {
       "runs": 21,
-      "ns": 45969008.0,
-      "ns_spread": 0.008746697340086172,
-      "cycles": 114787338.0
+      "ns": 46586701.0,
+      "ns_spread": 0.002485237149546176,
+      "cycles": 116759603.0
     },
     "decode_arena": {
       "runs": 100,
-      "ns": 2971403.0,
-      "ns_spread": 0.002808437630304607,
-      "cycles": 7456521.0
+      "ns": 2185252.0,
+      "ns_spread": 0.003374896808239965,
+      "cycles": 5474694.0
     },
     "decode_hot": null,
     "decode_hot_ints": 0,
