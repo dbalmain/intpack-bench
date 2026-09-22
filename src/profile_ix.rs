@@ -30,6 +30,9 @@ use crate::stream::{Dataset, Kind};
 use crate::timer;
 
 const BLOCK: usize = 128;
+/// pfor's bitset token; the walk reports such a block as width `BITSET`,
+/// no exceptions.
+const BITSET: u8 = 0xfe;
 
 pub fn run(
     path: &std::path::Path,
@@ -597,6 +600,14 @@ fn walk_pfor(n: usize, buf: &[u8]) -> Result<Vec<(u8, u8, u16)>> {
         if token == 0xff {
             byte += 1 + BLOCK * 4;
             out.push((32, 255, (byte - start) as u16));
+        } else if token == BITSET {
+            byte += 1;
+            while buf[byte] >= 0x80 {
+                byte += 1;
+            }
+            byte += 1;
+            byte += 1 + usize::from(buf[byte]);
+            out.push((BITSET, 0, (byte - start) as u16));
         } else {
             let exc = token >> 5;
             let width = token & 31;
@@ -650,7 +661,18 @@ fn predict_pfor(list: &[u32], block: usize) -> (u8, u8) {
     let width = (32 - eighth.leading_zeros()).max(max_bits.saturating_sub(8));
     let mask = if width >= 32 { u32::MAX } else { (1u32 << width) - 1 };
     let exceptions = gaps.iter().filter(|&&g| g > mask).count();
-    if width == 32 || (width == 31 && exceptions == 7) { (32, 255) } else { (width as u8, exceptions as u8) }
+    if width == 32 || (width >= 30 && exceptions == 7) {
+        return (32, 255);
+    }
+    let span = list[start + BLOCK - 1] - list[start];
+    if span < 255 * 8 {
+        let first_bytes = (32 - gaps[0].leading_zeros()).max(1).div_ceil(7) as usize;
+        let bitset = 1 + first_bytes + 1 + span as usize / 8 + 1;
+        if bitset < 1 + 2 * exceptions + width as usize * 16 {
+            return (BITSET, 0);
+        }
+    }
+    (width as u8, exceptions as u8)
 }
 
 fn predict_lucene(list: &[u32], block: usize) -> i8 {
