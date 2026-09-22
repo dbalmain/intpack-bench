@@ -45,12 +45,33 @@ pub struct Config {
     /// Cap on lists conformance-checked before timing (all lists if fewer).
     pub check_lists: usize,
     pub probes: usize,
+    /// Time only this phase — `enc`, `dec`, `hot`, `open`, `ix1`, `ix10`,
+    /// `ix100`, `ix1000`, `seek`, `get` — and skip the rest. Their random
+    /// draws still happen, so the timed phase sees the probes a full run
+    /// would; the point is a process whose profile is one phase.
+    pub only: Option<String>,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Self { seed: 42, min_runs: 7, max_runs: 100, budget: Duration::from_secs(2), check_lists: 2000, probes: 20_000 }
+        Self {
+            seed: 42,
+            min_runs: 7,
+            max_runs: 100,
+            budget: Duration::from_secs(2),
+            check_lists: 2000,
+            probes: 20_000,
+            only: None,
+        }
     }
+}
+
+/// [`timer::measure`] unless [`Config::only`] names another phase.
+fn phase(cfg: &Config, name: &str, f: impl FnMut()) -> Option<Sample> {
+    cfg.only
+        .as_deref()
+        .is_none_or(|only| only == name)
+        .then(|| timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, f))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -169,7 +190,12 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
 
     // ── encode + density ──
     let mut arena = Arena { bytes: Vec::new(), spans: Vec::new() };
-    rec.encode = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || encode_all(codec, ds, &mut arena)));
+    // Encode and open fill state later phases read, so a skipped one still runs once.
+    let mut encode = || encode_all(codec, ds, &mut arena);
+    rec.encode = phase(cfg, "enc", &mut encode);
+    if rec.encode.is_none() {
+        encode();
+    }
     rec.bytes = arena.bytes.len();
     rec.bits_per_int = rec.bytes as f64 * 8.0 / ints as f64;
     let entropy: f64 = ds.lists.iter().map(|l| entropy_bits(kind, universe, l)).sum();
@@ -185,13 +211,13 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
 
     // ── decode, arena order ──
     let mut out = Vec::with_capacity(rec.longest_list);
-    rec.decode_arena = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+    rec.decode_arena = phase(cfg, "dec", || {
         for (list, &(o, n)) in ds.lists.iter().zip(&arena.spans) {
             out.clear();
             codec.decode(kind, universe, list.len(), &arena.bytes[o..o + n], &mut out);
             std::hint::black_box(&out);
         }
-    }));
+    });
 
     // ── decode, hot ──
     // The longest list up to 64K ints: long enough to amortise per-list
@@ -203,20 +229,20 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
         let len = ds.lists[i].len();
         let reps = (1 << 20) / len.max(1);
         rec.decode_hot_ints = len * reps;
-        rec.decode_hot = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+        rec.decode_hot = phase(cfg, "hot", || {
             for _ in 0..reps {
                 out.clear();
                 codec.decode(kind, universe, len, &arena.bytes[o..o + n], &mut out);
                 std::hint::black_box(&out);
             }
-        }));
+        });
     }
 
     // ── open ──
     let needs_open = (kind == Kind::Sorted && codec.caps().seek) || codec.caps().random_access;
     let mut prepared: Vec<Box<dyn Prepared>> = Vec::new();
     if needs_open {
-        rec.open = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+        let mut open = || {
             prepared.clear();
             prepared.extend(
                 ds.lists
@@ -224,7 +250,11 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
                     .zip(&arena.spans)
                     .map(|(l, &(o, n))| codec::prepare(codec, kind, universe, l.len(), &arena.bytes[o..o + n])),
             );
-        }));
+        };
+        rec.open = phase(cfg, "open", &mut open);
+        if rec.open.is_none() {
+            open();
+        }
     }
 
     // ── seek / intersect (sorted, with cursor) ──
@@ -240,13 +270,13 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
                 .map(|_| (long[rng.random_range(0..long.len())], rng.random_range(0..universe)))
                 .collect();
             rec.seek_probes = probes.len();
-            rec.seek = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+            rec.seek = phase(cfg, "seek", || {
                 for &(i, target) in &probes {
                     if let Some(mut cur) = prepared[i].cursor() {
                         std::hint::black_box(cur.next_geq(target));
                     }
                 }
-            }));
+            });
         }
     }
 
@@ -260,11 +290,11 @@ pub fn run(codec: &dyn Codec, ds: &Dataset, cfg: &Config) -> Record {
             })
             .collect();
         rec.get_probes = probes.len();
-        rec.get = Some(timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+        rec.get = phase(cfg, "get", || {
             for &(i, j) in &probes {
                 std::hint::black_box(prepared[i].get(j));
             }
-        }));
+        });
     }
 
     // ── peak memory on the longest list ──
@@ -351,11 +381,11 @@ fn intersect_bench(
     let got = leapfrog(s, l);
     assert_eq!(got, naive, "{}: intersect count mismatch on lists {s}×{l}", codec.name());
 
-    let sample = timer::measure(cfg.min_runs, cfg.max_runs, cfg.budget, || {
+    let sample = phase(cfg, &format!("ix{ratio}"), || {
         for &(s, l) in &pairs {
             std::hint::black_box(leapfrog(s, l));
         }
-    });
+    })?;
     Some(Intersect { ratio, pairs: pairs.len(), short_ints, long_ints, sample })
 }
 

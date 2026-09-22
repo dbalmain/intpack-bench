@@ -73,6 +73,11 @@ enum Cmd {
         budget: f64,
         #[arg(long, default_value_t = 42)]
         seed: u64,
+        /// Time only this phase (`enc`, `dec`, `hot`, `open`, `ix1`, `ix10`,
+        /// `ix100`, `ix1000`, `seek`, `get`), for profiling; the rest are
+        /// skipped with their random draws kept.
+        #[arg(long)]
+        only: Option<String>,
     },
     /// Scratch: block stats and phase times for one intersection ratio.
     /// Not a supported mode.
@@ -131,10 +136,10 @@ fn main() -> Result<()> {
                 eprintln!("{}: {} lists, {} ints", path.display(), ds.lists.len(), ds.total_ints());
             }
         }
-        Cmd::Bench { data, out, codecs, filter, budget, seed } => {
+        Cmd::Bench { data, out, codecs, filter, budget, seed, only } => {
             let out = out.unwrap_or_else(|| PathBuf::from("results").join(bench::machine().hostname));
             std::fs::create_dir_all(&out)?;
-            let cfg = bench::Config { seed, budget: Duration::from_secs_f64(budget), ..Default::default() };
+            let cfg = bench::Config { seed, budget: Duration::from_secs_f64(budget), only, ..Default::default() };
             let codecs: Vec<Box<dyn codec::Codec>> = if codecs.is_empty() {
                 codec::all()
             } else {
