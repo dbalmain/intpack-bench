@@ -173,6 +173,16 @@ optional and must be native, not emulated by decoding everything. The
   index will actually run.
 * Every codec is round-trip checked on a sample of lists, and every
   intersection is checked against a naive merge, before anything is timed.
+* Cursor timings depend on which physical pages the binary's `.text` lands
+  on. One build of this bench measured `ip-pfor128-skip` ∩ 1:1000 on
+  `words.docs` at 60–62 ns/e across eight runs (ASLR on or off), while a
+  byte-identical `cp` of the same file to a new inode measured 53–55, as did
+  every other build; `perf stat` showed 6× the L1I misses, all filled from
+  L2 (the Zen way-predictor false-miss signature). Hot decode and 1:1 do not
+  move; the block-entering paths (`decode_block_sorted`, `unpack`, `next_geq`)
+  do. So before trusting a cursor regression between builds, `cp` the slow
+  binary and run it again; and compare cursors within one run of one file.
+  `.ai/DONE-layout.md` in the intpack worktree has the full investigation.
 * Not yet measured: genuinely cold (page-cache-evicted) decode; encode
   under `nice`; multi-threaded anything. All deliberate for a first pass.
 
