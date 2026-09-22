@@ -1,8 +1,9 @@
 //! `intpack`'s own `pfor128` and `pfor128skip`: the same 128-block, VByte-tail,
 //! and optional skip-table container as the `bitpacking`-crate rows (`bp128`,
 //! `bp128-skip`), extended with Lucene's at-most-seven patched exceptions per
-//! block. Blocks without exceptions remain byte-identical. Each adapter is a
-//! thin call into the crate.
+//! block. Sorted blocks without exceptions stay byte-identical to those rows.
+//! An unsorted full block also stores its minimum, so it does not. Each
+//! adapter is a thin call into the crate.
 
 use crate::stream::Kind;
 
@@ -105,40 +106,53 @@ mod tests {
     }
 
     #[test]
-    fn never_longer_than_crate_rows_on_conformance_cases() {
-        for kind in [Kind::Sorted, Kind::Unsorted] {
-            for (universe, list) in super::super::conformance_cases(kind) {
-                for (ours, theirs) in [
-                    (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
-                    (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
-                ] {
-                    let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
-                    ours.encode(kind, universe, &list, &mut ours_buf);
-                    theirs.encode(kind, universe, &list, &mut theirs_buf);
-                    assert!(
-                        ours_buf.len() <= theirs_buf.len(),
-                        "{} longer than {} for {kind:?}, n={}",
-                        ours.name(),
-                        theirs.name(),
-                        list.len()
-                    );
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn no_exception_blocks_match_crate_rows() {
-        for (kind, list) in [(Kind::Sorted, (0..300).collect::<Vec<u32>>()), (Kind::Unsorted, vec![3; 300])] {
+    fn never_longer_than_crate_rows_on_sorted_conformance_cases() {
+        // Sorted blocks have no frame minimum, so patching only removes bytes.
+        // Unsorted blocks pay 1–5 bytes of minimum and can lose on a short list.
+        for (universe, list) in super::super::conformance_cases(Kind::Sorted) {
             for (ours, theirs) in [
                 (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
                 (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
             ] {
                 let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
-                ours.encode(kind, 1 << 20, &list, &mut ours_buf);
-                theirs.encode(kind, 1 << 20, &list, &mut theirs_buf);
-                assert_eq!(ours_buf, theirs_buf, "{} and {}", ours.name(), theirs.name());
+                ours.encode(Kind::Sorted, universe, &list, &mut ours_buf);
+                theirs.encode(Kind::Sorted, universe, &list, &mut theirs_buf);
+                assert!(
+                    ours_buf.len() <= theirs_buf.len(),
+                    "{} longer than {} for sorted, n={}",
+                    ours.name(),
+                    theirs.name(),
+                    list.len()
+                );
             }
+        }
+    }
+
+    #[test]
+    fn no_exception_sorted_blocks_match_crate_rows() {
+        let list: Vec<u32> = (0..300).collect();
+        for (ours, theirs) in [
+            (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+            (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+        ] {
+            let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
+            ours.encode(Kind::Sorted, 1 << 20, &list, &mut ours_buf);
+            theirs.encode(Kind::Sorted, 1 << 20, &list, &mut theirs_buf);
+            assert_eq!(ours_buf, theirs_buf, "{} and {}", ours.name(), theirs.name());
+        }
+    }
+
+    #[test]
+    fn equal_unsorted_block_is_shorter_than_plain_bitpacking() {
+        let list = vec![3u32; 300];
+        for (ours, theirs) in [
+            (&IpPfor128 as &dyn Codec, &super::super::bp128::Bp128 as &dyn Codec),
+            (&IpPfor128Skip as &dyn Codec, &super::super::bp128skip::Bp128Skip as &dyn Codec),
+        ] {
+            let (mut ours_buf, mut theirs_buf) = (Vec::new(), Vec::new());
+            ours.encode(Kind::Unsorted, 1 << 20, &list, &mut ours_buf);
+            theirs.encode(Kind::Unsorted, 1 << 20, &list, &mut theirs_buf);
+            assert!(ours_buf.len() < theirs_buf.len(), "{} not shorter than {}", ours.name(), theirs.name());
         }
     }
 
